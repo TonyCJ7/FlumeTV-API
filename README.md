@@ -21,7 +21,7 @@
     <img src="https://img.shields.io/badge/Docker%20Hub-flumetv--api-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Hub">
   </a>
   <a href="https://github.com/TonyCJ7/FlumeTV-API/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License MIT">
+    <img src="https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=for-the-badge" alt="License CC BY-NC 4.0">
   </a>
 </p>
 
@@ -474,4 +474,14 @@ FlumeTV is developed and maintained for self-hosters. If you find it useful, ple
 
 ## License
 
-MIT
+This repository is licensed under **[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)** (Creative Commons Attribution–NonCommercial 4.0 International). See [`LICENSE`](LICENSE) for the full notice.
+
+| Allowed | Not allowed |
+| ------- | ----------- |
+| Fork, self-host, and modify for **personal** or other **non-commercial** use | **Commercial** use (selling access, paid hosting-as-a-service for others, SaaS, etc.) |
+| Share your fork with attribution and a link to this license | Removing license/attribution requirements |
+
+**Attribution:** Credit FlumeTV API (and note changes if you redistribute). **NonCommercial:** [CC’s definition](https://creativecommons.org/licenses/by-nc/4.0/) applies — when in doubt, ask or choose a commercial license from the maintainer.
+
+> [!NOTE]
+> Dependencies in `package-lock.json` remain under their own licenses (many are MIT). This license applies to **this project’s source**, not third-party packages.

@@ -1,6 +1,7 @@
 {
   "name": "flumetv-api",
   "version": "1.0.0",
+  "license": "CC-BY-NC-4.0",
   "description": "FlumeTV API — PostgreSQL-backed Stremio IPTV backend with M3U/EPG ingestion, Xtream Codes, encrypted addon tokens, prefetch workers, scheduler/queue, SSE for sync progress and logs, and REST for the FlumeTV UI.",
   "repository": {
     "type": "git",
