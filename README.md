@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/github/stars/TonyCJ7/FlumeTV-API?style=for-the-badge&logo=github" alt="GitHub Stars">
   </a>
   <a href="https://github.com/TonyCJ7/FlumeTV-UI">
-    <img src="https://img.shields.io/badge/FlumeTV-UI-frontend-6366f1?style=for-the-badge&logo=react&logoColor=white" alt="FlumeTV UI">
+    <img src="https://img.shields.io/badge/FlumeTV--UI-frontend-6366f1?style=for-the-badge&logo=react&logoColor=white" alt="FlumeTV UI">
   </a>
   <a href="https://hub.docker.com/r/tonycj7/flumetv-api">
     <img src="https://img.shields.io/badge/Docker%20Hub-flumetv--api-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Hub">
@@ -25,7 +25,7 @@
   </a>
 </p>
 
-## ☕ Sponsor
+## ☕ Donate
 
 <p>
   <a href="https://ko-fi.com/tonycj07" target="_blank" rel="noopener noreferrer">
