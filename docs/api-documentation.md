@@ -1,6 +1,6 @@
 # FlumeTV API — client & data reference
 
-**Last updated:** 2026-05-28
+**Last updated:** 2026-05-30
 
 Contract reference for building a **custom management client** (web, mobile, or desktop) against FlumeTV-API. Covers REST + SSE request/response shapes, auth, Stremio addon URLs, and the PostgreSQL schema.
 
@@ -24,7 +24,7 @@ Schema source of truth: [`db/migrations/`](../db/migrations/).
 | Surface | Base path | Auth |
 | --- | --- | --- |
 | **REST panel** | `/api/...` | httpOnly session cookie (JWT signed with `SESSION_JWT_SECRET`) |
-| **Stremio addon** | `/{token}/...` | Encrypted URL token from `GET /api/stremio/manifest-url` (`ADDON_SECRET_KEY`) |
+| **Stremio addon** | `/addon/{token}/...` | Encrypted URL token from `GET /api/stremio/manifest-url` (`ADDON_SECRET_KEY`) |
 
 - **CORS:** Set `FRONTEND_ORIGIN` on the server to your client origin(s). Browser clients must send **`credentials: "include"`** on REST calls so the session cookie is stored and sent.
 - **JSON bodies:** `Content-Type: application/json` unless noted.
@@ -355,7 +355,7 @@ Inactive hashes are omitted from Stremio addon catalogs.
 
 ```json
 {
-  "manifestUrl": "https://api.example.com/{encryptedToken}/manifest.json",
+  "manifestUrl": "https://api.example.com/addon/{encryptedToken}/manifest.json",
   "stremioWebInstallUrl": "https://web.stremio.com/#?addon=..."
 }
 ```
@@ -463,7 +463,7 @@ Rows with the same `logKey` update in place; on replay, highest `seq` per `logKe
 
 ## Stremio addon HTTP
 
-Mounted at `/{token}` (encrypted user token).
+Mounted at `/addon/{token}` (encrypted user token).
 
 | Method | Path | Response |
 | --- | --- | --- |

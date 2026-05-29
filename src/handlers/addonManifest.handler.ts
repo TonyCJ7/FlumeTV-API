@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 
 import { addonInterface } from "@/addon/addon";
 
-/** GET `/:config_hash/manifest.json` — static manifest JSON (keeps `behaviorHints.configurable` for Stremio Configure). */
+/** GET `/addon/:config_hash/manifest.json` — static manifest JSON (keeps `behaviorHints.configurable` for Stremio Configure). */
 export function handleGetAddonManifest(_req: Request, res: Response): void {
   const { manifest } = addonInterface;
 

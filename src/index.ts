@@ -5,7 +5,7 @@ import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import "@/types/rest.types";
 
-import { PORT } from "./constants/common.constants";
+import { ADDON_HTTP_MOUNT_PREFIX, PORT } from "./constants/common.constants";
 import { killAllPrefetchWorkers } from "./core/prefetchSyncWorkerProcess";
 import { sweepTerminalRoomsOnStartup } from "./core/roomLifecycle";
 import { startSchedulerDueLoop } from "./core/schedulerDue";
@@ -73,7 +73,7 @@ apiRouter.use("/stremio", stremioRouter);
 apiRouter.use("/", roomRouter);
 app.use("/api", apiRouter);
 
-app.use("/:config_hash", addonRouter);
+app.use(`${ADDON_HTTP_MOUNT_PREFIX}/:config_hash`, addonRouter);
 
 app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) {

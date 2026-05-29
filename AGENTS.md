@@ -9,9 +9,9 @@ Read this file **before** changing code in this repository. It routes you to the
 | Surface | Base | Auth |
 | --- | --- | --- |
 | REST panel | `/api/...` | httpOnly session JWT cookie (`SESSION_JWT_SECRET`) |
-| Stremio addon | `/:token/...` | Encrypted URL token (`ADDON_SECRET_KEY`) |
+| Stremio addon | `/addon/:token/...` | Encrypted URL token (`ADDON_SECRET_KEY`) |
 
-**Persistence:** PostgreSQL (`DATABASE_URL`). Schema in [`db/migrations/`](db/migrations/). **Entry:** [`src/index.ts`](src/index.ts) — DB init, scheduler, `/api` routes, `/:config_hash` addon routes.
+**Persistence:** PostgreSQL (`DATABASE_URL`). Schema in [`db/migrations/`](db/migrations/). **Entry:** [`src/index.ts`](src/index.ts) — DB init, scheduler, `/api` routes, `/addon/:config_hash` Stremio routes.
 
 **Do not** use or edit `src/temp/`. Do not add a `controllers/` layer or ad-hoc migration runners outside `db/migrations/`.
 

@@ -29,7 +29,7 @@ function isNoHandlerError(error: unknown): boolean {
   );
 }
 
-/** GET `/:config_hash/{catalog|meta|stream}/:type/:id.json` — dispatches via `addonInterface.get`. */
+/** GET `/addon/:config_hash/{catalog|meta|stream}/:type/:id.json` — dispatches via `addonInterface.get`. */
 export async function handleAddonResourceRoute(
   req: Request,
   res: Response,

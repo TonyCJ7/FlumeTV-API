@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import _trim from "lodash/trim";
 
+import { ADDON_HTTP_MOUNT_PREFIX } from "@/constants/common.constants";
 import { REST_ERROR_CODES } from "@/constants/errorCodes.constants";
 import type { GetStremioManifestUrlResponseBody } from "@/types/rest.types";
 import { encodeToken } from "@/utils/crypto.utils";
@@ -26,7 +27,7 @@ export function handleGetStremioManifestUrl(req: Request, res: Response): void {
 
   const token = encodeToken({ uuid: userId });
   const publicBase = publicBaseForManifest(req);
-  const manifestUrl = `${publicBase}/${token}/manifest.json`;
+  const manifestUrl = `${publicBase}${ADDON_HTTP_MOUNT_PREFIX}/${token}/manifest.json`;
   const stremioWebInstallUrl = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifestUrl)}`;
   const body: GetStremioManifestUrlResponseBody = { manifestUrl, stremioWebInstallUrl };
 

@@ -1,6 +1,6 @@
 # FlumeTV API — backend reference
 
-**Last updated:** 2026-05-29
+**Last updated:** 2026-05-30
 
 **Source of truth for backend implementation** — architecture, module layout, domain model, runtime behavior (queue, scheduler, room lifecycle, SSE, sync), and how the codebase fits together. Start here when working in this repository as an agent or contributor.
 
@@ -25,11 +25,11 @@ FlumeTV-API is a Node.js **Express** service that powers a self-hostable **Strem
 | Surface           | Base path     | Auth                                                                        |
 | ----------------- | ------------- | --------------------------------------------------------------------------- |
 | **REST panel**    | `/api/...`    | httpOnly session cookie (JWT signed with `SESSION_JWT_SECRET`)              |
-| **Stremio addon** | `/:token/...` | Encrypted URL token (`encodeToken` / `decodeToken` with `ADDON_SECRET_KEY`) |
+| **Stremio addon** | `/addon/:token/...` | Encrypted URL token (`encodeToken` / `decodeToken` with `ADDON_SECRET_KEY`) |
 
 **Persistence:** **PostgreSQL** via `pg` connection pool; `DATABASE_URL` is required. SQL schema lives in [`db/migrations/`](../db/migrations/); apply updates with **`npm run db:migrate`** (or on HTTP startup). Table name constants: [`src/constants/dbBuild.constants.ts`](../src/constants/dbBuild.constants.ts).
 
-**Entry point:** [`src/index.ts`](../src/index.ts) — initializes DB, starts scheduler loop, mounts `/api` and `/:config_hash` addon routes.
+**Entry point:** [`src/index.ts`](../src/index.ts) — initializes DB, starts scheduler loop, mounts `/api` and `/addon/:config_hash` Stremio routes.
 
 ---
 
@@ -192,7 +192,7 @@ Shared hash semantics on **DELETE**: always unlink caller's `user_hash`; delete 
 
 ## Stremio addon HTTP
 
-First-party routes in [`src/routes/addon.route.ts`](../src/routes/addon.route.ts) (replaces SDK `getRouter`). Mounted at `/:config_hash` where the param is the encrypted token.
+First-party routes in [`src/routes/addon.route.ts`](../src/routes/addon.route.ts) (replaces SDK `getRouter`). Mounted at `/addon/:config_hash` where the param is the encrypted token (`ADDON_HTTP_MOUNT_PREFIX` in [`common.constants.ts`](../src/constants/common.constants.ts)).
 
 | Route                                          | Handler role                                   |
 | ---------------------------------------------- | ---------------------------------------------- |

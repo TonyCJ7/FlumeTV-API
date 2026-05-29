@@ -1,8 +1,5 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TonyCJ7/FlumeTV-UI/main/public/assets/flume.png">
-    <img alt="FlumeTV Logo" src="https://raw.githubusercontent.com/TonyCJ7/FlumeTV-UI/main/public/assets/flumeMix.png" width="256" height="256">
-  </picture>
+<p align="center" style="max-width: 500px; margin: 0 auto;">
+  <img alt="FlumeTV Logo" src="https://raw.githubusercontent.com/TonyCJ7/FlumeTV-UI/refs/heads/main/public/assets/flumeMix.png" width="400" >
 </p>
 
 <h1 align="center">FlumeTV API</h1>
@@ -21,13 +18,18 @@
     <img src="https://img.shields.io/badge/FlumeTV-UI-frontend-6366f1?style=for-the-badge&logo=react&logoColor=white" alt="FlumeTV UI">
   </a>
   <a href="https://hub.docker.com/r/tonycj7/flumetv-api">
-    <img src="https://img.shields.io/docker/pulls/tonycj7/flumetv-api?style=for-the-badge&logo=docker" alt="Docker Pulls">
+    <img src="https://img.shields.io/badge/Docker%20Hub-flumetv--api-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Hub">
   </a>
   <a href="https://github.com/TonyCJ7/FlumeTV-API/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License MIT">
   </a>
-  <a href="https://github.com/sponsors/TonyCJ7">
-    <img src="https://img.shields.io/github/sponsors/TonyCJ7?style=for-the-badge&logo=githubsponsors" alt="GitHub Sponsors">
+</p>
+
+## ☕ Sponsor
+
+<p>
+  <a href="https://ko-fi.com/tonycj07" target="_blank" rel="noopener noreferrer">
+    <img src="https://raw.githubusercontent.com/TonyCJ7/FlumeTV-UI/refs/heads/main/public/assets/kofi-donate-button.png" alt="Donate on Ko-fi" width="200"/>
   </a>
 </p>
 
@@ -57,7 +59,7 @@ FlumeTV API is the backend for **[FlumeTV](https://github.com/TonyCJ7/FlumeTV-UI
 | Surface | Base | Auth |
 | ------- | ---- | ---- |
 | **REST panel** | `/api/...` | Session cookie (JWT) |
-| **Stremio addon** | `/<token>/...` | Encrypted URL token |
+| **Stremio addon** | `/addon/<token>/...` | Encrypted URL token |
 
 Use the official **[FlumeTV UI](https://github.com/TonyCJ7/FlumeTV-UI)** to manage sources, or build your own client against the REST and SSE endpoints.
 
@@ -231,7 +233,7 @@ You do **not** have to use FlumeTV UI. The REST API and SSE streams are stable c
 - **Per-hash ops** — Refetch, cancel, toggle active, room events, and log streaming under `/api/hashes/:hash/...`.
 - **Stremio install** — `GET /api/stremio/manifest-url` returns `manifestUrl` and `stremioWebInstallUrl`.
 
-Stremio itself talks to the **public addon** at `/<token>/...` (encrypted user token, no session cookie). Your frontend only needs the REST surface unless you embed Stremio install flows.
+Stremio itself talks to the **public addon** at `/addon/<token>/...` (encrypted user token, no session cookie). Your frontend only needs the REST surface unless you embed Stremio install flows. Behind one host, proxy `/api` and `/addon` to this API and serve the UI on `/`.
 
 Detailed integration notes: [`docs/api-documentation.md`](docs/api-documentation.md).
 
@@ -411,15 +413,15 @@ REST error codes: [`docs/api-error-codes.md`](docs/api-error-codes.md).
 
 ## 📺 Stremio addon
 
-Public routes are mounted at `/:token` where `token` is the encrypted user token from `manifest-url` (not the config hash used in REST).
+Public routes are mounted at `/addon/:token` where `token` is the encrypted user token from `manifest-url` (not the config hash used in REST).
 
 | Pattern | Purpose |
 | ------- | ------- |
-| `GET /:token/manifest.json` | Addon manifest |
-| `GET /:token/configure` | **302** → `{FRONTEND_ORIGIN}/config?uuid=<userId>` |
-| `GET /:token/catalog/...` | Catalogs |
-| `GET /:token/stream/...` | Playback URLs |
-| `GET /:token/meta/...` | Meta |
+| `GET /addon/:token/manifest.json` | Addon manifest |
+| `GET /addon/:token/configure` | **302** → `{FRONTEND_ORIGIN}/config?uuid=<userId>` |
+| `GET /addon/:token/catalog/...` | Catalogs |
+| `GET /addon/:token/stream/...` | Playback URLs |
+| `GET /addon/:token/meta/...` | Meta |
 
 Handlers serve data for the user's **active** hashes only.
 
@@ -461,16 +463,10 @@ FlumeTV is developed and maintained for self-hosters. If you find it useful, ple
 - ⭐ **[Star the repository](https://github.com/TonyCJ7/FlumeTV-API)** on GitHub.
 - 🤝 **Contribute** — Report issues, suggest features, or submit pull requests.
 - ☕ **Donate**:
-  - **[Ko-fi](https://ko-fi.com/tonycj07)**
-  - **[GitHub Sponsors](https://github.com/sponsors/TonyCJ7)**
 
 <p align="center">
   <a href="https://ko-fi.com/tonycj07" target="_blank" rel="noopener noreferrer">
-    <img src="https://raw.githubusercontent.com/TonyCJ7/FlumeTV-UI/main/public/assets/kofi-logomark.png" alt="Ko-fi" height="40" />
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://github.com/sponsors/TonyCJ7" target="_blank" rel="noopener noreferrer">
-    <img src="https://raw.githubusercontent.com/TonyCJ7/FlumeTV-UI/main/public/assets/github-sponsors.svg" alt="GitHub Sponsors" height="40" />
+    <img src="https://raw.githubusercontent.com/TonyCJ7/FlumeTV-UI/refs/heads/main/public/assets/kofi-logomark.png" alt="Ko-fi" height="40" />
   </a>
 </p>
 

@@ -6,7 +6,7 @@ import { decodeToken } from "@/utils/crypto.utils";
 import { dlog, logWarn } from "@/utils/debug.utils";
 import { frontendPublicOriginFromEnv } from "@/utils/frontendOrigin.utils";
 
-/** GET `/:config_hash/configure` — redirect Stremio Configure to frontend config panel. */
+/** GET `/addon/:config_hash/configure` — redirect Stremio Configure to frontend config panel. */
 export function handleAddonConfigureRedirect(req: Request, res: Response): void {
   const config_hash = _toString(req.params.config_hash ?? "");
   const frontendOrigin = frontendPublicOriginFromEnv();
