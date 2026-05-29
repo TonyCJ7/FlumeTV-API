@@ -1,0 +1,19 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+.DS_Store
+coverage
+*.tsbuildinfo
+# SQLite (database file + WAL/journal sidecars)
+*.db
+*.db-*
+*.pem
+*.key
+*.p12
+credentials.json
+.secrets/
+postgres-data/

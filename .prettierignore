@@ -1,0 +1,8 @@
+dist
+node_modules
+coverage
+package-lock.json
+*.min.js
+src/temp
+README.md
+*.mdc

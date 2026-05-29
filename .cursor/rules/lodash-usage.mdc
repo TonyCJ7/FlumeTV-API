@@ -1,0 +1,32 @@
+---
+description: Lodash per-function imports; prefer lodash for collection/object/string helpers
+alwaysApply: true
+---
+
+# Lodash
+
+## Import style
+
+```typescript
+import _trim from "lodash/trim";
+import _isEmpty from "lodash/isEmpty";
+```
+
+- One import per function from **`lodash/<name>`**; prefix binding with **`_`**
+- Do not use **`import _ from "lodash"`** or **`import * as _ from "lodash"`**
+
+## Prefer lodash by default
+
+Use lodash for collection, object, string, and predicate helpers when a lodash function exists — it guards **`null`** / **`undefined`**.
+
+| Prefer lodash | Use native when |
+| --- | --- |
+| `_map`, `_filter`, `_find`, `_sortBy`, `_keys`, `_trim`, `_isEmpty`, … | `for…of` with **`break`**, **`?.` / `??`** on one known path, template literals |
+
+- Prefer **`_sortBy`** / **`_orderBy`** over **`[...arr].sort(compareFn)`** unless in-place sort is intentional
+- In **`src/utils`** and **factories**, default to lodash on unknown-shaped values
+
+## Performance
+
+- Do not use **`isEqual`**, deep **`merge`**, or similar in hot paths (SSE, per-request catalog/meta) unless measured
+- Prefer shallow checks, ids, or minimal hashes for diffs

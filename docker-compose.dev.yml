@@ -1,0 +1,20 @@
+# Development overlay — use with: npm run dev
+# Merges with docker-compose.yml; starts postgres + API with tsx watch and bind mounts.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: flumetv-api-dev
+    restart: "no"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://flumetv:flumetv@postgres:5432/flumetv
+    volumes:
+      - .:/app
+      - flumetv-api-node-modules:/app/node_modules
+    command: ["npx", "tsx", "watch", "src/index.ts"]
+
+volumes:
+  flumetv-api-node-modules:
