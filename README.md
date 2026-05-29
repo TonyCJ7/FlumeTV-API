@@ -46,6 +46,7 @@
 - [REST API](#-rest-api)
 - [Stremio addon](#-stremio-addon)
 - [Scripts](#-scripts)
+- [Contributing](#-contributing)
 - [Further reading](#-further-reading)
 - [Support the project](#-support-the-project)
 - [License](#license)
@@ -442,6 +443,56 @@ Handlers serve data for the user's **active** hashes only.
 | `npm run format` / `format:check` | Prettier |
 | `npm run docker:down` | Stop Compose stacks |
 
+**Before opening a PR:** `npm run format:check && npm run lint && npm run typecheck` (and `npm run build` if you touched compile paths).
+
+---
+
+## 🤝 Contributing
+
+Thanks for helping improve FlumeTV. Use **[FlumeTV-UI](https://github.com/TonyCJ7/FlumeTV-UI)** for frontend work; this repo is the API backend.
+
+### Pull requests
+
+| Practice | Details |
+| -------- | ------- |
+| **Branch names** | `feature/<short-topic>`, `fix/<short-topic>`, or `docs/<short-topic>` — lowercase kebab-case after the prefix (e.g. `fix/prefetch-cancel-race`). |
+| **Scope** | Keep changes **modular** — one logical fix or feature per PR; avoid unrelated refactors in the same diff. |
+| **Commits** | Do **not** use `git commit --no-verify`. Husky runs lint-staged (ESLint + Prettier on staged TS); fix reported issues instead of skipping hooks. |
+| **Checks** | Run `npm run format:check`, `npm run lint`, and `npm run typecheck` before pushing. |
+| **Description** | Explain **what** changed and **why**. Link related issues when applicable. |
+| **Bug fixes** | Include **steps to reproduce**, expected vs actual behavior, and environment notes (see [Reporting issues](#reporting-issues)). |
+| **UI changes** | Open the PR in **FlumeTV-UI** and attach **screenshots** (before/after when useful). API-only PRs do not need UI captures. |
+| **Contract changes** | If REST/SSE/Stremio behavior changes, update [`docs/api-documentation.md`](docs/api-documentation.md) (and related docs) in the same PR — see [`AGENTS.md`](AGENTS.md). |
+
+### Code style guidelines
+
+Full conventions live in [`AGENTS.md`](AGENTS.md) and [`.cursor/rules/`](.cursor/rules/). Highlights:
+
+1. **Layers** — `routes` → `handlers` → `core` / `services` / `database` / `factories` / `utils` with **no upward imports** (`axios` only in `services/`, SQL only in `*.db.ts`, no I/O in `*.factory.ts`).
+2. **File names** — camelCase stems + suffix: `*.handler.ts`, `*.services.ts`, `*.db.ts`, `*.factory.ts`, `*.utils.ts`, `*.types.ts`, `*.constants.ts`.
+3. **Functions** — `handle*` for HTTP entry; `fetch*`/`get*` for reads; `insert*`/`upsert*`/`update*`/`delete*` for writes (no `ensure*` for side effects).
+4. **Formatting** — Braces on every block; spaced object literals `{ foo: bar }`; avoid deep nesting — use named locals.
+5. **Lodash** — One import per function: `import _trim from "lodash/trim"` (not `import _ from "lodash"`).
+6. **Design** — YAGNI first: ship the current need only; extract shared logic when the **same rule** appears twice.
+7. **Stremio handlers** — `try/catch` and return empty safe shapes (`{ streams: [] }`, `{ metas: [] }`) on failure.
+8. **Do not** add a `controllers/` layer or migration runners outside `db/migrations/`.
+
+### Reporting issues
+
+Open a [GitHub issue](https://github.com/TonyCJ7/FlumeTV-API/issues) with a clear title and as much of the following as you can. **Redact passwords, tokens, and full playlist URLs** — sanitized samples only.
+
+| Field | What to include |
+| ----- | ---------------- |
+| **Summary** | What went wrong in one or two sentences. |
+| **Steps to reproduce** | Numbered steps from a clean or known state (login → add source → refetch → …). |
+| **Expected vs actual** | What you thought would happen vs what happened. |
+| **Node.js version** | Output of `node -v` (project requires **≥ 20.9**, see [`.nvmrc`](.nvmrc)). |
+| **Hosting** | How you run the stack — e.g. Docker Compose (`tonycj7/flumetv-api`), local `npm run dev:local`, or other (serverless is uncommon for this project; say if applicable). |
+| **Provider** | Config `type`: **`direct`** (M3U) or **`xtream`** (Xtream Codes). For Xtream sync/parser bugs, note panel flavor if known — **JSON API** vs **M3U-style** catalog URLs. |
+| **Sample data** | Sanitized M3U snippet, category count, or line count — not full credentials. |
+| **Logs** | With `DEBUG_MODE=true` in `.env`, paste relevant API/worker lines; **scrub** URLs, usernames, and passwords. Prefetch log SSE excerpts help for sync issues. |
+| **UI** | If the problem is visible only in the panel, file the issue on **[FlumeTV-UI](https://github.com/TonyCJ7/FlumeTV-UI/issues)** and link both repos when the API is involved. |
+
 ---
 
 ## Further reading
@@ -461,7 +512,7 @@ Handlers serve data for the user's **active** hashes only.
 FlumeTV is developed and maintained for self-hosters. If you find it useful, please consider:
 
 - ⭐ **[Star the repository](https://github.com/TonyCJ7/FlumeTV-API)** on GitHub.
-- 🤝 **Contribute** — Report issues, suggest features, or submit pull requests.
+- 🤝 **Contribute** — See [Contributing](#-contributing) for PR workflow, code style, and issue templates.
 - ☕ **Donate**:
 
 <p align="center">

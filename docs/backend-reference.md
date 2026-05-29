@@ -78,7 +78,7 @@ Detailed layering rules: [`.cursor/rules/addon-layering.mdc`](../.cursor/rules/a
 | Worker entry      | `src/workers/prefetchSyncWorker.ts` | Child process sync runner                        |
 | Types / constants | `src/types/`, `src/constants/`      | Types only vs literals/env                       |
 
-**Do not** use `src/temp/` or add a `controllers/` layer.
+**Do not** add a `controllers/` layer or ad-hoc migration runners outside `db/migrations/`.
 
 ---
 

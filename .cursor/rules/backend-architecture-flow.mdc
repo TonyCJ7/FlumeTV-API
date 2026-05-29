@@ -38,7 +38,6 @@ middleware → { utils }   (and constants/types as needed)
 - **`database` → `services`** or **`database` → `core`**
 - **`factories` → `database`** or **`factories` → `services`**
 - **`axios`** outside **`services/`** (except rare one-off in a handler)
-- Import **`src/temp/`**
 - Add parallel top-level **`sdk/`** or **`scheduler/`** — use **`src/addon/`** and **`src/core/`**
 - Put **`pool.query`** in **`factories/`**, **`handlers`** in **`core/`**, or business orchestration that belongs in **`core/`** inside **`handlers/`**
 

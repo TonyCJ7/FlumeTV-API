@@ -13,7 +13,7 @@ Read this file **before** changing code in this repository. It routes you to the
 
 **Persistence:** PostgreSQL (`DATABASE_URL`). Schema in [`db/migrations/`](db/migrations/). **Entry:** [`src/index.ts`](src/index.ts) — DB init, scheduler, `/api` routes, `/addon/:config_hash` Stremio routes.
 
-**Do not** use or edit `src/temp/`. Do not add a `controllers/` layer or ad-hoc migration runners outside `db/migrations/`.
+**Do not** add a `controllers/` layer or ad-hoc migration runners outside `db/migrations/`.
 
 ---
 

@@ -49,8 +49,7 @@ alwaysApply: true
 
 ## Do not
 
-- Import or edit **`src/temp/`**
-- Do not add ad-hoc **migration runners** outside `db/migrations/` unless the user explicitly asks
+- Add ad-hoc **migration runners** outside `db/migrations/` unless the user explicitly asks
 - Put **`axios`** in **`core/`**, **`pool.query`** in **`factories/`**, or **`handlers`** in **`core/`**
 
 ## Tooling
