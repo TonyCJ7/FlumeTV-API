@@ -145,7 +145,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL:-postgresql://flumetv:flumetv@postgres:5432/flumetv}
+      DATABASE_URL: postgresql://flumetv:flumetv@postgres:5432/flumetv
     networks:
       - api-network
 
@@ -170,22 +170,10 @@ If you want the full source tree, npm scripts, or to contribute:
 git clone https://github.com/TonyCJ7/FlumeTV-API.git
 cd FlumeTV-API
 cp .env.example .env
-docker compose up -d
+docker compose up -d --build
 ```
 
-The repo [`docker-compose.yml`](docker-compose.yml) uses the same published image.
-
-### Build from source (optional)
-
-To build the API image locally instead of pulling from Docker Hub, replace the `api` service `image` line with:
-
-```yaml
-    build:
-      context: .
-      dockerfile: Dockerfile
-```
-
-Then run `docker compose up -d --build`.
+The repo [`docker-compose.yml`](docker-compose.yml) builds the API from the local `Dockerfile` (tagged `tonycj7/flumetv-api:latest`). Omit `--build` to reuse an existing image.
 
 ### Development (contributors)
 
@@ -194,7 +182,7 @@ Requires Node.js ≥ 20.9.
 | Command | What runs |
 | -------- | --------- |
 | `npm run dev` | Compose dev overlay — Postgres + API with **`tsx watch`** and source bind mount |
-| `npm run start` | Production Compose — Postgres + **`tonycj7/flumetv-api:latest`** |
+| `npm run start` | Production Compose — Postgres + API image built from **`Dockerfile`** |
 | `npm run dev:local` | Host Node only — requires **`DATABASE_URL`** pointing at local Postgres |
 | `npm run docker:down` | Stops dev and production Compose stacks |
 
@@ -250,7 +238,7 @@ Copy [`.env.example`](.env.example) to `.env` before running or deploying. Value
 | -------- | ----------- |
 | `SESSION_JWT_SECRET` | Signs REST session JWT. Server will not start without it. |
 | `ADDON_SECRET_KEY` | Encrypts Stremio addon URL tokens and sealed panel passwords. Server will not start without it. |
-| `DATABASE_URL` | PostgreSQL connection string. Compose overrides the host to `@postgres:5432` for `npm run dev` / `npm run start`. |
+| `DATABASE_URL` | PostgreSQL connection string for **host** dev (`npm run dev:local`). Compose sets `postgresql://flumetv:flumetv@postgres:5432/flumetv` on the API container (ignores host `localhost` in `.env`). |
 
 ### HTTP, CORS, and public URLs
 

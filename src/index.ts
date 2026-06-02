@@ -3,7 +3,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import type { NextFunction, Request, Response } from "express";
-import "@/types/rest.types";
 
 import { ADDON_HTTP_MOUNT_PREFIX, PORT } from "./constants/common.constants";
 import { killAllPrefetchWorkers } from "./core/prefetchSyncWorkerProcess";

@@ -3,5 +3,15 @@
   "compilerOptions": {
     "noEmit": false
   },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "resolveFullExtension": ".js",
+    "replacers": {
+      "lodashEsm": {
+        "enabled": true,
+        "file": "scripts/tscAliasLodashReplacer.cjs"
+      }
+    }
+  },
   "exclude": ["node_modules", "dist"]
 }
