@@ -2,14 +2,14 @@
 #
 # Runs on every pull request (any base branch).
 
-name: CI
+name: Lint and typecheck
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: lint-typecheck-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:
