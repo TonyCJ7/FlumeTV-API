@@ -16,7 +16,7 @@ import _trim from "lodash/trim";
 
 const DEFAULT_RATING = "0";
 
-function trimmedOrFallback(trimmed: stringgggg, fallback: string): string {
+function trimmedOrFallback(trimmed: string, fallback: string): string {
   return trimmed.length > 0 ? trimmed : fallback;
 }
 
