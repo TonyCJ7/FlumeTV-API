@@ -2,8 +2,8 @@ import { ADDON_ID, ADDON_NAME } from "@/constants/common.constants";
 import { ID_PREFIX } from "@/constants/stream.constants";
 import { addonCatalogHandler } from "@/handlers/addonCatalog.handler";
 import { addonMetaHandler } from "@/handlers/addonMeta.handler";
-import { addonStreamHandler } from "@/handlers/addonStream.handler";
 import { addonBuilder } from "@/utils/stremioAddonSdk.utils";
+import { addonStreamHandler } from "@/handlers/addonStream.handler";
 
 export const builder = new addonBuilder({
   id: ADDON_ID,
