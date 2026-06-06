@@ -1,0 +1,44 @@
+# Typecheck and lint-staged (same checks as .husky/pre-commit, plus full-project types).
+#
+# Runs on every pull request (any base branch).
+
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: 0
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: lint-staged (changed files)
+        run: |
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          git fetch origin "${BASE_REF}:${BASE_REF}"
+          npx lint-staged --diff="origin/${BASE_REF}...${{ github.event.pull_request.head.sha }}" --fail-on-changes
