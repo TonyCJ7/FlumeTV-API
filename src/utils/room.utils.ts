@@ -1,7 +1,15 @@
 import _includes from "lodash/includes";
 
-import { ROOM_LAST_OUTCOMES } from "@/constants/room.constants";
+import { ROOM_LAST_OUTCOMES, TERMINAL_ROOM_STATUSES } from "@/constants/room.constants";
 import type { RoomLastOutcome } from "@/types/room.types";
+
+export function isTerminalRoomStatus(status: string | null): boolean {
+  if (status == null) {
+    return false;
+  }
+
+  return (TERMINAL_ROOM_STATUSES as readonly string[]).includes(status);
+}
 
 export function parseRoomLastOutcome(value: string | null | undefined): RoomLastOutcome | null {
   if (value == null || value.length === 0) {

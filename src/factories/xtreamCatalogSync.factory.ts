@@ -2,20 +2,21 @@ import _isEmpty from "lodash/isEmpty";
 import _toNumber from "lodash/toNumber";
 import _toString from "lodash/toString";
 import _trim from "lodash/trim";
-import type { Dictionary } from "lodash";
 
-import { XTREAM_FALLBACK_CATEGORY_ID } from "@/constants/xtreamSync.constants";
+import { XTREAM_FALLBACK_CATEGORY_ID } from "@/constants/stream.constants";
 import type {
   XtreamFormattedCategory,
   XtreamFormattedLiveStream,
   XtreamFormattedSeriesStream,
   XtreamFormattedVodStream,
+  XtreamPanelCategoryRow,
+  XtreamPanelStreamRow,
 } from "@/types/xtreamSync.types";
 import { normalizeProviderCategoryId, resolvedContainerExtension } from "@/utils/xtreamMeta.utils";
 
 /** Build formatted category rows from Xtream `get_*_categories` panel list entries. */
 export function xtreamCategoriesFromPanelFactory(
-  rows: Dictionary<unknown>[],
+  rows: XtreamPanelCategoryRow[],
 ): XtreamFormattedCategory[] {
   const byId = new Map<number, XtreamFormattedCategory>();
 
@@ -64,7 +65,9 @@ export function xtreamCategoriesForIdsFactory(params: {
 }
 
 /** Map `get_live_streams` rows to formatted live catalog streams. */
-export function xtreamLiveStreamsFactory(rows: Dictionary<unknown>[]): XtreamFormattedLiveStream[] {
+export function xtreamLiveStreamsFactory(
+  rows: XtreamPanelStreamRow[],
+): XtreamFormattedLiveStream[] {
   const streams: XtreamFormattedLiveStream[] = [];
 
   for (const row of rows) {
@@ -111,7 +114,7 @@ export function xtreamLiveStreamsFactory(rows: Dictionary<unknown>[]): XtreamFor
 }
 
 /** Map `get_vod_streams` rows to formatted VOD catalog streams. */
-export function xtreamVodStreamsFactory(rows: Dictionary<unknown>[]): XtreamFormattedVodStream[] {
+export function xtreamVodStreamsFactory(rows: XtreamPanelStreamRow[]): XtreamFormattedVodStream[] {
   const streams: XtreamFormattedVodStream[] = [];
 
   for (const row of rows) {
@@ -157,7 +160,7 @@ export function xtreamVodStreamsFactory(rows: Dictionary<unknown>[]): XtreamForm
 
 /** Map `get_series` rows to formatted series catalog entries. */
 export function xtreamSeriesStreamsFactory(
-  rows: Dictionary<unknown>[],
+  rows: XtreamPanelStreamRow[],
 ): XtreamFormattedSeriesStream[] {
   const streams: XtreamFormattedSeriesStream[] = [];
 

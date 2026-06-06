@@ -8,6 +8,7 @@ import {
 } from "@/core/roomLogSseBroadcaster";
 import { registerRoomSseClient, sendRoomSseSnapshotToResponse } from "@/core/roomSseBroadcaster";
 import { userHasHashLink } from "@/database/room.db";
+import { parseHashPathParam } from "@/utils/hashOpsIngress.utils";
 import { sendKnownRestError } from "@/utils/restError.utils";
 
 /**
@@ -15,11 +16,16 @@ import { sendKnownRestError } from "@/utils/restError.utils";
  * GET `/api/hashes/:hash/room/events`
  */
 export async function handleGetRoomEvents(req: Request, res: Response): Promise<void> {
-  const hash = req.params.hash as string;
+  const hash = parseHashPathParam(req.params.hash);
   const userId = req.userId;
 
   if (!userId) {
     sendKnownRestError(res, REST_ERROR_CODES.AUTH_SESSION_MISSING);
+    return;
+  }
+
+  if (!hash) {
+    sendKnownRestError(res, REST_ERROR_CODES.CONFIG_BODY_INVALID);
     return;
   }
 
@@ -54,11 +60,16 @@ export async function handleGetRoomEvents(req: Request, res: Response): Promise<
  * GET `/api/hashes/:hash/logs/stream`
  */
 export async function handleGetRoomLogStream(req: Request, res: Response): Promise<void> {
-  const hash = req.params.hash as string;
+  const hash = parseHashPathParam(req.params.hash);
   const userId = req.userId;
 
   if (!userId) {
     sendKnownRestError(res, REST_ERROR_CODES.AUTH_SESSION_MISSING);
+    return;
+  }
+
+  if (!hash) {
+    sendKnownRestError(res, REST_ERROR_CODES.CONFIG_BODY_INVALID);
     return;
   }
 

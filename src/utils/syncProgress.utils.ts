@@ -8,6 +8,7 @@ import type {
   RoomSyncProgress,
   RoomSyncProgressSqlColumns,
 } from "@/types/room.types";
+import type { PrefetchSectorLogInput } from "@/types/prefetchWorker.types";
 
 export function roomSyncProgressFromRow(row: RoomSyncProgressSqlColumns): RoomSyncProgress | null {
   if (row.sync_percent == null) {
@@ -288,17 +289,6 @@ export function createThrottledPrefetchProgressReporter(
     monotonic(progress);
   };
 }
-
-export type PrefetchSectorLogInput = {
-  bytesRead?: number;
-  bytesTotal?: number | null;
-  line: string;
-  logKey: string;
-  sector: string;
-  sectorPercent?: number | null;
-  status: RoomLogSectorStatus;
-  tone?: RoomLogTone;
-};
 
 /**
  * Throttles sector `in_progress` emissions; `success` / `error` emit immediately.

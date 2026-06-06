@@ -1,15 +1,62 @@
 import type { Response } from "express";
 
 import { getPrefetchSyncQueueDepth } from "@/core/prefetchSyncQueueState";
-import { isTerminalRoomStatus } from "@/constants/room.constants";
+import type { PrefetchSyncQueueDepth } from "@/types/queue.types";
+import { isTerminalRoomStatus } from "@/utils/room.utils";
 import { getSchedulerSnapshot } from "@/database/scheduler.db";
 import { allocateEventSequence } from "@/database/streamEventResume.db";
 import { getRoomSseSnapshot } from "@/database/room.db";
+import type { RoomLastOutcome, RoomSyncProgress } from "@/types/room.types";
 
 type RoomSseEventName = "log" | "progress" | "queue" | "status";
 
+type RoomSseRoomRef = {
+  closedReason: string | null;
+  id: number | null;
+  lastOutcome: RoomLastOutcome | null;
+  status: string | null;
+  updatedAt: string | null;
+};
+
+type RoomSseStatusRoomRef = RoomSseRoomRef & {
+  triggeredBy: string | null;
+};
+
+type RoomSseQueueEventData = {
+  global: PrefetchSyncQueueDepth;
+  hash: string;
+  room: RoomSseRoomRef | null;
+};
+
+type RoomSseStatusEventData = {
+  hash: string;
+  isTerminal: boolean;
+  lastSyncedAt: string | null;
+  nextTriggerAt: string | null;
+  room: RoomSseStatusRoomRef | null;
+  schedulerIntervalMinutes: number | null;
+};
+
+type RoomSseProgressEventData = {
+  hash: string;
+  progress: RoomSyncProgress | null;
+  roomId: number | null;
+};
+
+type RoomSseLogEventData = {
+  hash: string;
+  logsTail: string | null;
+  roomId: number | null;
+};
+
+type RoomSseEventData =
+  | RoomSseQueueEventData
+  | RoomSseStatusEventData
+  | RoomSseProgressEventData
+  | RoomSseLogEventData;
+
 type RoomSseMessage = {
-  data: Record<string, unknown>;
+  data: RoomSseEventData;
   event: RoomSseEventName;
 };
 
@@ -119,7 +166,7 @@ function writeSseEvent(
   res: Response,
   sequence: number,
   event: RoomSseEventName,
-  data: unknown,
+  data: RoomSseEventData,
 ): boolean {
   try {
     if (res.writableEnded) {

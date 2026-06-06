@@ -9,7 +9,7 @@ import type { M3uParsedEntry } from "@/types/directSync.types";
 import type { RoomSyncProgress } from "@/types/room.types";
 import { dlog, logError } from "@/utils/debug.utils";
 import { isProbablyM3uStreamUrlLine, parseM3uExtinfLine } from "@/utils/m3uPlaylist.utils";
-import type { PrefetchSectorLogEmitter, PrefetchSyncLogFn } from "@/utils/prefetchWorkerLog.utils";
+import type { PrefetchSectorLogEmitter, PrefetchSyncLogFn } from "@/types/prefetchWorker.types";
 import {
   computeHybridSlicePercent,
   estimatedPhaseMsFromJobEstimate,

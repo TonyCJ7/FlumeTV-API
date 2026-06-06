@@ -7,6 +7,7 @@ import { getStreamAndConfigById } from "@/database/common.db";
 import { listSeriesEpisodes } from "@/database/meta.db";
 import { directMetaDetailFactory } from "@/factories/streamMetaDirect.factory";
 import { xtremeMetaDetailFactory } from "@/factories/streamMetaXtreme.factory";
+import { streamWithConfigFromDbRow } from "@/factories/streamWithConfig.factory";
 import type { SeriesEpisode, StreamWithConfig } from "@/types/stream.types";
 import { decodeStremioIdPayload } from "@/utils/builder.utils";
 import { decodeToken } from "@/utils/crypto.utils";
@@ -48,7 +49,7 @@ async function fetchXtremeMetaPayloadForStream(
   }
 }
 
-export async function handleDirectMeta(
+export async function buildDirectMeta(
   streamWithConfig: StreamWithConfig["DirectConfig"],
   type: ContentType,
   encodedId: string,
@@ -74,7 +75,7 @@ export async function handleDirectMeta(
   };
 }
 
-export async function handleXtremeMeta(
+export async function buildXtremeMeta(
   streamWithConfig: StreamWithConfig["XtremeConfig"],
   encodedId: string,
   parsedId: string,
@@ -146,7 +147,9 @@ export async function addonMetaHandler(args: {
       throw new Error(`[META] Invalid id or stream_id, ${id}, ${stream_id}`);
     }
 
-    const streamWithConfig = await getStreamAndConfigById(id, type, userId);
+    const streamWithConfig = streamWithConfigFromDbRow(
+      await getStreamAndConfigById(id, type, userId),
+    );
     const fallback: MetaDetail = {
       id,
       type,
@@ -155,7 +158,7 @@ export async function addonMetaHandler(args: {
 
     if (streamWithConfig.config_type === CONFIG_TYPE.DIRECT) {
       dlog("[META] Building direct catalog meta");
-      return await handleDirectMeta(
+      return await buildDirectMeta(
         streamWithConfig as StreamWithConfig["DirectConfig"],
         type,
         _id,
@@ -165,7 +168,7 @@ export async function addonMetaHandler(args: {
 
     if (streamWithConfig.config_type === CONFIG_TYPE.XTREME) {
       dlog("[META] Building xtreme catalog meta");
-      return handleXtremeMeta(
+      return buildXtremeMeta(
         streamWithConfig as StreamWithConfig["XtremeConfig"],
         _id,
         String(id),

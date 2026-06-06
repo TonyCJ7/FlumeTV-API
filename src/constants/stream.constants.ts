@@ -1,15 +1,3 @@
-export const ADDON_TO_STREAM_TYPE = {
-  movie: "movie",
-  series: "series",
-  live: "tv",
-} as const;
-
-export const STREMIO_TO_STREAM_TYPE = {
-  movie: "movie",
-  series: "series",
-  tv: "live",
-} as const;
-
 export const ADDON_STREAM_TYPE = {
   MOVIE: "movie",
   SERIES: "series",
@@ -44,3 +32,10 @@ export const CONFIG_TYPE = {
   XTREME: "xtreme",
   DIRECT: "direct",
 } as const;
+
+/**
+ * Sentinel `category_id` for Xtream streams whose panel row omits `category_id` or references a missing category.
+ * Stored only in-memory for sync formatting; written to PostgreSQL `*_category.category_id` as a negative integer.
+ */
+/** Sentinel category id when panel omits a label for a stream's category. */
+export const XTREAM_FALLBACK_CATEGORY_ID = -999999;

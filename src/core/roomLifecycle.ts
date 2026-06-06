@@ -4,8 +4,8 @@ import {
   ACTIVE_SYNC_ROOM_STATUSES,
   ROOM_PROCESS_RESTARTED_LOG_LINE,
   ROOM_CLOSED_REASON_PROCESS_RESTARTED,
-  isTerminalRoomStatus,
 } from "@/constants/room.constants";
+import { isTerminalRoomStatus } from "@/utils/room.utils";
 import {
   deleteOrphanRoomRows,
   finalizeRoomRunSuccess,

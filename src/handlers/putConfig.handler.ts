@@ -1,46 +1,24 @@
 import type { Request, Response } from "express";
 
 import { REST_ERROR_CODES } from "@/constants/errorCodes.constants";
-import { enqueueSyncJob, purgePrefetchSyncQueueJob } from "@/core/prefetchSyncQueue";
+import { enqueueSyncJob } from "@/core/prefetchSyncQueue";
 import {
-  broadcastConfigsPrefetchStatusForHash,
-  broadcastConfigsPrefetchStatusGlobalQueue,
   broadcastConfigsPrefetchStatusHashToUser,
-  clearPrefetchStatusProgressThrottleForHash,
   refreshConfigsPrefetchStatusUserHashIndex,
 } from "@/core/configsPrefetchStatusSseBroadcaster";
-import { broadcastRoomSse } from "@/core/roomSseBroadcaster";
+import { removeHashConfigForLastUser } from "@/core/lastUserHashRemoval";
 import {
   countOtherUsers,
-  deleteHashConfigCascadeForLastUser,
   deleteUserHashBridgeRow,
   getUserHashConfigName,
   updateUserHashConfigName,
   upsertHashConfigAndUserBridge,
 } from "@/database/providerConfig.db";
-import {
-  cancelQueuedRoom,
-  getRoomSummary,
-  updateRoomClosedState,
-  userHasHashLink,
-} from "@/database/room.db";
+import { getRoomSummary, userHasHashLink } from "@/database/room.db";
 import type { PostConfigRequestBody, PutConfigResponseBody } from "@/types/rest.types";
+import { validateAndBuildConfigHashParams } from "@/utils/configRequestBody.utils";
+import { parseHashPathParam } from "@/utils/hashOpsIngress.utils";
 import { sendKnownRestError } from "@/utils/restError.utils";
-
-import { validateAndBuildConfigHashParams } from "./postConfig.handler";
-
-function parseConfigHashParam(raw: unknown): string | null {
-  if (typeof raw !== "string" || raw.length === 0) {
-    return null;
-  }
-
-  try {
-    const decoded = decodeURIComponent(raw);
-    return decoded.length > 0 ? decoded : null;
-  } catch {
-    return null;
-  }
-}
 
 async function removeOldHashForUser(params: {
   hash: string;
@@ -56,31 +34,11 @@ async function removeOldHashForUser(params: {
     return { hashRemovedFromServer: false, ok: true };
   }
 
-  const prefetchRoom = await getRoomSummary(hash);
-  const prefetchRoomStatus = prefetchRoom?.roomStatus;
+  const removed = await removeHashConfigForLastUser(hash);
 
-  if (prefetchRoomStatus === "running" || prefetchRoomStatus === "fetching") {
+  if (!removed.ok) {
     return { ok: false, reason: "HASH_SYNC_ALREADY_ACTIVE" };
   }
-
-  const removedWaitingJobs = purgePrefetchSyncQueueJob(hash);
-
-  for (const job of removedWaitingJobs) {
-    await updateRoomClosedState({
-      closedReason: "config_deleted",
-      roomId: job.roomId,
-      status: "cancelled",
-    });
-  }
-
-  await cancelQueuedRoom(hash);
-
-  clearPrefetchStatusProgressThrottleForHash(hash);
-  await broadcastRoomSse(hash);
-  await broadcastConfigsPrefetchStatusForHash(hash);
-  await broadcastConfigsPrefetchStatusGlobalQueue();
-
-  await deleteHashConfigCascadeForLastUser(hash);
 
   return { hashRemovedFromServer: true, ok: true };
 }
@@ -93,7 +51,7 @@ export async function handlePutConfig(req: Request, res: Response): Promise<void
     return;
   }
 
-  const oldHash = parseConfigHashParam(req.params.hash);
+  const oldHash = parseHashPathParam(req.params.hash);
 
   if (!oldHash) {
     sendKnownRestError(res, REST_ERROR_CODES.CONFIG_BODY_INVALID);

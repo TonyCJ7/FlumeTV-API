@@ -1,3 +1,7 @@
+import path from "node:path";
+
+import _split from "lodash/split";
+import _toLower from "lodash/toLower";
 import _trim from "lodash/trim";
 
 const SEASON_EPISODE_PATTERNS: RegExp[] = [
@@ -7,6 +11,26 @@ const SEASON_EPISODE_PATTERNS: RegExp[] = [
   /\bSeason\s+(\d{1,2})\s+Episode\s+(\d{1,4})\b/i,
   /\bSeason\s+(\d{1,2})\s*,\s*Episode\s+(\d{1,4})\b/i,
 ];
+
+function extensionFromPathExt(ext: string): string | null {
+  if (!ext || ext.length <= 1) {
+    return null;
+  }
+
+  return _toLower(ext.slice(1));
+}
+
+export function fileExtensionFromUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+
+    return extensionFromPathExt(path.extname(u.pathname));
+  } catch {
+    const noQuery = _split(url, "?")[0] ?? url;
+
+    return extensionFromPathExt(path.extname(noQuery));
+  }
+}
 
 /**
  * Returns season / episode and a best-effort series title when an IPTV-style label contains

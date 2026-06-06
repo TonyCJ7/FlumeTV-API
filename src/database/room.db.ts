@@ -2,7 +2,8 @@ import _includes from "lodash/includes";
 import type { PoolClient } from "pg";
 
 import { TABLE_NAMES } from "@/constants/dbBuild.constants";
-import { ACTIVE_SYNC_ROOM_STATUSES, isTerminalRoomStatus } from "@/constants/room.constants";
+import { ACTIVE_SYNC_ROOM_STATUSES } from "@/constants/room.constants";
+import { isTerminalRoomStatus, parseRoomLastOutcome } from "@/utils/room.utils";
 import type {
   HashConfigLinkedRoomRow,
   RoomJoinedSummaryRow,
@@ -11,7 +12,6 @@ import type {
   RoomSseSqlRow,
   RoomSummary,
 } from "@/types/room.types";
-import { parseRoomLastOutcome } from "@/utils/roomOutcome.utils";
 import { roomSyncProgressFromRow } from "@/utils/syncProgress.utils";
 
 import { getPool } from "./pgPool.utils";
@@ -144,48 +144,6 @@ export async function linkHashConfigRoomIdStandalone(params: {
     `,
     [params.roomId, params.hash],
   );
-}
-
-/**
- * Ensures `hash_config.room_id` points at an **`idle`** room row (insert + link when missing).
- */
-export async function ensureIdleRoomForHash(params: {
-  hash: string;
-  triggeredByUserId: string;
-}): Promise<number | null> {
-  return withPgTransaction(async (client) => {
-    const { rows: lockedRows } = await client.query(
-      /* sql */ `
-        SELECT
-          hash
-        FROM
-          ${TABLE_NAMES.HASH_CONFIG}
-        WHERE
-          hash = $1
-        FOR UPDATE
-      `,
-      [params.hash],
-    );
-
-    if (lockedRows.length === 0) {
-      return null;
-    }
-
-    const row = await selectHashConfigLinkedRoomInTx(client, params.hash);
-
-    if (!row) {
-      return null;
-    }
-
-    if (row.room_id != null) {
-      return row.room_id;
-    }
-
-    const roomId = await insertIdleRoomRowInTx(client, params.triggeredByUserId);
-    await linkHashConfigRoomIdInTx(client, { hash: params.hash, roomId });
-
-    return roomId;
-  });
 }
 
 export async function resetRoomToIdle(params: {

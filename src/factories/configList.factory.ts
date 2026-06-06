@@ -2,7 +2,7 @@ import _includes from "lodash/includes";
 
 import { ACTIVE_SYNC_ROOM_STATUSES } from "@/constants/room.constants";
 import { CONFIG_TYPE } from "@/constants/stream.constants";
-import { parseRoomLastOutcome } from "@/utils/roomOutcome.utils";
+import { parseRoomLastOutcome } from "@/utils/room.utils";
 import { roomSyncProgressFromRow } from "@/utils/syncProgress.utils";
 import type { UserConfigListDbRow } from "@/types/provider.types";
 import type {
@@ -42,10 +42,7 @@ function listItemBaseFromRow(row: UserConfigListDbRow, userId: string) {
   };
 }
 
-export function xtremeConfigItemFactory(
-  row: UserConfigListDbRow,
-  userId: string,
-): ConfigListItemXtream {
+function xtremeConfigItemFactory(row: UserConfigListDbRow, userId: string): ConfigListItemXtream {
   const base = listItemBaseFromRow(row, userId);
 
   return {
@@ -60,10 +57,7 @@ export function xtremeConfigItemFactory(
   };
 }
 
-export function directConfigItemFactory(
-  row: UserConfigListDbRow,
-  userId: string,
-): ConfigListItemDirect {
+function directConfigItemFactory(row: UserConfigListDbRow, userId: string): ConfigListItemDirect {
   const base = listItemBaseFromRow(row, userId);
 
   return {

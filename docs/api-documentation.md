@@ -1,19 +1,19 @@
 # FlumeTV API — client & data reference
 
-**Last updated:** 2026-05-30
+**Last updated:** 2026-06-06
 
 Contract reference for building a **custom management client** (web, mobile, or desktop) against FlumeTV-API. Covers REST + SSE request/response shapes, auth, Stremio addon URLs, and the PostgreSQL schema.
 
 For **implementation context** (architecture, queue, room lifecycle, file layout), see [backend-reference.md](backend-reference.md).
 
-| Doc | Use for |
-| --- | --- |
-| [AGENTS.md](../AGENTS.md) | Agent onboarding — docs map, layering, conventions |
-| [backend-reference.md](backend-reference.md) | Backend implementation — architecture, domain, runtime behavior |
-| [README.md](../README.md) | Quick start, Docker, environment variables |
-| [api-documentation.md](api-documentation.md) | REST/SSE/Stremio contracts and PostgreSQL schema (this file) |
-| [api-error-codes.md](api-error-codes.md) | REST `code` → HTTP status → remediation |
-| [`src/types/rest.types.ts`](../src/types/rest.types.ts) | TypeScript mirrors of JSON bodies (when working in this repo) |
+| Doc                                                     | Use for                                                         |
+| ------------------------------------------------------- | --------------------------------------------------------------- |
+| [AGENTS.md](../AGENTS.md)                               | Agent onboarding — docs map, layering, conventions              |
+| [backend-reference.md](backend-reference.md)            | Backend implementation — architecture, domain, runtime behavior |
+| [README.md](../README.md)                               | Quick start, Docker, environment variables                      |
+| [api-documentation.md](api-documentation.md)            | REST/SSE/Stremio contracts and PostgreSQL schema (this file)    |
+| [api-error-codes.md](api-error-codes.md)                | REST `code` → HTTP status → remediation                         |
+| [`src/types/rest.types.ts`](../src/types/rest.types.ts) | TypeScript mirrors of JSON bodies (when working in this repo)   |
 
 Schema source of truth: [`db/migrations/`](../db/migrations/).
 
@@ -21,9 +21,9 @@ Schema source of truth: [`db/migrations/`](../db/migrations/).
 
 ## Base URL and surfaces
 
-| Surface | Base path | Auth |
-| --- | --- | --- |
-| **REST panel** | `/api/...` | httpOnly session cookie (JWT signed with `SESSION_JWT_SECRET`) |
+| Surface           | Base path            | Auth                                                                          |
+| ----------------- | -------------------- | ----------------------------------------------------------------------------- |
+| **REST panel**    | `/api/...`           | httpOnly session cookie (JWT signed with `SESSION_JWT_SECRET`)                |
 | **Stremio addon** | `/addon/{token}/...` | Encrypted URL token from `GET /api/stremio/manifest-url` (`ADDON_SECRET_KEY`) |
 
 - **CORS:** Set `FRONTEND_ORIGIN` on the server to your client origin(s). Browser clients must send **`credentials: "include"`** on REST calls so the session cookie is stored and sent.
@@ -36,12 +36,12 @@ Schema source of truth: [`db/migrations/`](../db/migrations/).
 
 ### REST session
 
-| Item | Value |
-| --- | --- |
-| Cookie name | `SESSION_COOKIE_NAME` (default `session`) |
+| Item         | Value                                           |
+| ------------ | ----------------------------------------------- |
+| Cookie name  | `SESSION_COOKIE_NAME` (default `session`)       |
 | Cookie flags | `httpOnly`; `Secure` when `NODE_ENV=production` |
-| JWT claim | `sub` = `userId` (UUID string) |
-| Max age | `SESSION_MAX_AGE_SECONDS` (default 7 days) |
+| JWT claim    | `sub` = `userId` (UUID string)                  |
+| Max age      | `SESSION_MAX_AGE_SECONDS` (default 7 days)      |
 
 **Protected routes** return `401` with `AUTH_SESSION_MISSING` when the cookie is absent, or `403` with `AUTH_SESSION_INVALID` when the JWT is invalid/expired.
 
@@ -71,13 +71,13 @@ Branch on **`code`**; treat **`message`** as display text only. Full table: [api
 
 ### Auth — `/api/auth`
 
-| Method | Path | Auth | Description |
-| --- | --- | --- | --- |
-| `POST` | `/register` | — | Create account; sets session cookie |
-| `POST` | `/login` | — | Sign in; sets session cookie |
-| `POST` | `/logout` | — | Clears session cookie |
-| `GET` | `/me` | Session | Current user |
-| `POST` | `/change-password` | Session | Change password |
+| Method | Path               | Auth    | Description                         |
+| ------ | ------------------ | ------- | ----------------------------------- |
+| `POST` | `/register`        | —       | Create account; sets session cookie |
+| `POST` | `/login`           | —       | Sign in; sets session cookie        |
+| `POST` | `/logout`          | —       | Clears session cookie               |
+| `GET`  | `/me`              | Session | Current user                        |
+| `POST` | `/change-password` | Session | Change password                     |
 
 #### `POST /api/auth/register`
 
@@ -143,14 +143,14 @@ Server generates `userId`; save it after register (needed for login).
 
 ### Configs — `/api/configs` (session required)
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/` | List linked configs |
-| `POST` | `/` | Link or create config |
-| `PUT` | `/:hash` | Rename or change provider (may change hash) |
-| `DELETE` | `/:hash` | Unlink; server cascade when last user |
-| `GET` | `/prefetch-status` | Poll sync/queue snapshot |
-| `GET` | `/prefetch-status/stream` | SSE — live prefetch status (preferred) |
+| Method   | Path                      | Description                                 |
+| -------- | ------------------------- | ------------------------------------------- |
+| `GET`    | `/`                       | List linked configs                         |
+| `POST`   | `/`                       | Link or create config                       |
+| `PUT`    | `/:hash`                  | Rename or change provider (may change hash) |
+| `DELETE` | `/:hash`                  | Unlink; server cascade when last user       |
+| `GET`    | `/prefetch-status`        | Poll sync/queue snapshot                    |
+| `GET`    | `/prefetch-status/stream` | SSE — live prefetch status (preferred)      |
 
 #### Config request body (`POST` / `PUT`)
 
@@ -158,26 +158,26 @@ Server generates `userId`; save it after register (needed for login).
 
 **Xtream** (`type: "xtream"`)
 
-| Field | Required | Notes |
-| --- | --- | --- |
-| `configName` | yes | Display name |
-| `panelUrl` | yes | Public `http`/`https` only |
-| `panelUsername` | yes | |
-| `panelPassword` | yes | Stored encrypted; included in hash |
-| `hasCustomEpg` | no | boolean |
-| `customEpg` | no | string when custom EPG |
-| `epgUrl` | no | Public `http`/`https` if set |
-| `epgOffset` | no | integer minutes, default `0` |
+| Field           | Required | Notes                              |
+| --------------- | -------- | ---------------------------------- |
+| `configName`    | yes      | Display name                       |
+| `panelUrl`      | yes      | Public `http`/`https` only         |
+| `panelUsername` | yes      |                                    |
+| `panelPassword` | yes      | Stored encrypted; included in hash |
+| `hasCustomEpg`  | no       | boolean                            |
+| `customEpg`     | no       | string when custom EPG             |
+| `epgUrl`        | no       | Public `http`/`https` if set       |
+| `epgOffset`     | no       | integer minutes, default `0`       |
 
 **Direct** (`type: "direct"`)
 
-| Field | Required | Notes |
-| --- | --- | --- |
-| `configName` | yes | |
-| `m3uUrl` | yes | Public `http`/`https` |
-| `hasCustomEpg` | no | |
-| `epgUrl` | no | Public `http`/`https` if set |
-| `epgOffset` | no | integer, default `0` |
+| Field          | Required | Notes                        |
+| -------------- | -------- | ---------------------------- |
+| `configName`   | yes      |                              |
+| `m3uUrl`       | yes      | Public `http`/`https`        |
+| `hasCustomEpg` | no       |                              |
+| `epgUrl`       | no       | Public `http`/`https` if set |
+| `epgOffset`    | no       | integer, default `0`         |
 
 Private IPs, localhost, and blocked hostnames → `400 CONFIG_PROVIDER_URL_NOT_ALLOWED`.
 
@@ -242,11 +242,11 @@ Private IPs, localhost, and blocked hostnames → `400 CONFIG_PROVIDER_URL_NOT_A
 }
 ```
 
-| Outcome | Behavior |
-| --- | --- |
-| New provider hash | `created: true`, `linkStatus: "created"`, prefetch enqueued when queue accepts |
+| Outcome                                   | Behavior                                                                                      |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| New provider hash                         | `created: true`, `linkStatus: "created"`, prefetch enqueued when queue accepts                |
 | Hash exists globally, not on your account | `created: false`, `linkStatus: "linked-existing"`, no enqueue unless hash was new server-side |
-| Hash already linked to you | `409 CONFIG_ALREADY_EXISTS`; `message` includes existing `configName` |
+| Hash already linked to you                | `409 CONFIG_ALREADY_EXISTS`; `message` includes existing `configName`                         |
 
 #### `PUT /api/configs/:hash`
 
@@ -295,13 +295,13 @@ Same body as `POST`. Response is one of:
 
 ### Hash operations — `/api/hashes/:hash` (session required)
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `POST` | `/refetch` | Enqueue catalog sync |
-| `POST` | `/cancel` | Cancel queued or running sync |
-| `PATCH` | `/active` | Toggle Stremio visibility |
-| `GET` | `/room/events` | Per-hash room/queue SSE |
-| `GET` | `/logs/stream` | Prefetch log SSE |
+| Method  | Path           | Description                   |
+| ------- | -------------- | ----------------------------- |
+| `POST`  | `/refetch`     | Enqueue catalog sync          |
+| `POST`  | `/cancel`      | Cancel queued or running sync |
+| `PATCH` | `/active`      | Toggle Stremio visibility     |
+| `GET`   | `/room/events` | Per-hash room/queue SSE       |
+| `GET`   | `/logs/stream` | Prefetch log SSE              |
 
 #### `POST /api/hashes/:hash/refetch`
 
@@ -379,11 +379,11 @@ Send session cookie on connect. Use **`Last-Event-ID`** on reconnect where noted
 
 **Scope:** one connection per logged-in user (all linked hashes).
 
-| Event | `data` shape |
-| --- | --- |
-| `snapshot` | Full `GetConfigsPrefetchStatusResponseBody` (on connect) |
-| `hash` | `{ "hash": "hex", "entry": ConfigPrefetchStatusEntry \| null }` — `entry: null` removes hash |
-| `global_queue` | `{ "globalQueue": { "runningJobCount", "waitingJobCount", "totalQueueItems" } }` |
+| Event          | `data` shape                                                                                 |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| `snapshot`     | Full `GetConfigsPrefetchStatusResponseBody` (on connect)                                     |
+| `hash`         | `{ "hash": "hex", "entry": ConfigPrefetchStatusEntry \| null }` — `entry: null` removes hash |
+| `global_queue` | `{ "globalQueue": { "runningJobCount", "waitingJobCount", "totalQueueItems" } }`             |
 
 **Poll equivalent:** `GET /api/configs/prefetch-status` returns the same body as `snapshot`.
 
@@ -421,12 +421,12 @@ Progress updates on `hash` events are throttled (~`SYNC_PROGRESS_MIN_INTERVAL_MS
 
 **Scope:** one hash; requires `user_hash` link (`403 HASH_NOT_LINKED_TO_USER`).
 
-| Event | Purpose |
-| --- | --- |
-| `status` | Room status, scheduler, `lastSyncedAt`, `isTerminal` |
+| Event      | Purpose                                                      |
+| ---------- | ------------------------------------------------------------ |
+| `status`   | Room status, scheduler, `lastSyncedAt`, `isTerminal`         |
 | `progress` | `{ "hash", "roomId", "progress": RoomSyncProgress \| null }` |
-| `queue` | Global queue depth + room snippet |
-| `log` | `logsTail` text snapshot (legacy tail field) |
+| `queue`    | Global queue depth + room snippet                            |
+| `log`      | `logsTail` text snapshot (legacy tail field)                 |
 
 Reconnect resumes event `id` via `stream_event_resume` per hash.
 
@@ -434,11 +434,11 @@ Reconnect resumes event `id` via `stream_event_resume` per hash.
 
 **Scope:** one hash; supports **`Last-Event-ID`** (log line `seq`) for replay after disconnect.
 
-| Event | Purpose |
-| --- | --- |
-| `log` | Structured line (see below) |
-| `progress` | `{ "hash", "progress": RoomSyncProgress }` |
-| `log_reset` | New prefetch started — clear client log buffer |
+| Event       | Purpose                                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `log`       | Structured line (see below)                                                                                     |
+| `progress`  | `RoomSyncProgress` (bare object — e.g. `{ "percent": 42, "phase": "vod", "bytesRead": 0, "bytesTotal": null }`) |
+| `log_reset` | New prefetch started — clear client log buffer                                                                  |
 
 **`log` event payload (`RoomLogSsePayload`):**
 
@@ -465,14 +465,14 @@ Rows with the same `logKey` update in place; on replay, highest `seq` per `logKe
 
 Mounted at `/addon/{token}` (encrypted user token).
 
-| Method | Path | Response |
-| --- | --- | --- |
-| `GET` | `/manifest.json` | Stremio manifest JSON |
-| `GET` | `/configure` | **302** → `{FRONTEND_ORIGIN}/config?uuid={userId}` |
-| `GET` | `/catalog/:type/:id/:extra.json` | Catalog page |
-| `GET` | `/catalog/:type/:id.json` | Catalog |
-| `GET` | `/meta/:type/:id.json` | Meta |
-| `GET` | `/stream/:type/:id.json` | `{ "streams": [{ "url": "..." }] }` |
+| Method | Path                             | Response                                           |
+| ------ | -------------------------------- | -------------------------------------------------- |
+| `GET`  | `/manifest.json`                 | Stremio manifest JSON                              |
+| `GET`  | `/configure`                     | **302** → `{FRONTEND_ORIGIN}/config?uuid={userId}` |
+| `GET`  | `/catalog/:type/:id/:extra.json` | Catalog page                                       |
+| `GET`  | `/catalog/:type/:id.json`        | Catalog                                            |
+| `GET`  | `/meta/:type/:id.json`           | Meta                                               |
+| `GET`  | `/stream/:type/:id.json`         | `{ "streams": [{ "url": "..." }] }`                |
 
 No session cookie. Only **active** user configs contribute catalog data.
 
@@ -484,10 +484,10 @@ No session cookie. Only **active** user configs contribute catalog data.
 
 SHA-256 of canonical JSON (stable key order). Identical provider credentials share one server catalog.
 
-| Type | Hash includes |
-| --- | --- |
+| Type       | Hash includes                                                  |
+| ---------- | -------------------------------------------------------------- |
 | **Xtream** | Normalized `panelUrl`, EPG options, **username**, **password** |
-| **Direct** | Normalized `m3uUrl`, EPG options (URL userinfo affects hash) |
+| **Direct** | Normalized `m3uUrl`, EPG options (URL userinfo affects hash)   |
 
 `configName` is **never** in the hash. Multiple users link the same hash via separate `user_hash` rows.
 
@@ -497,11 +497,11 @@ One `room` row per hash for its lifetime.
 
 **`room.status`**
 
-| Value | Meaning |
-| --- | --- |
-| `idle` | No active sync |
-| `queued` | Waiting in prefetch queue |
-| `running` / `fetching` | Worker active — blocks duplicate enqueue |
+| Value                                       | Meaning                                  |
+| ------------------------------------------- | ---------------------------------------- |
+| `idle`                                      | No active sync                           |
+| `queued`                                    | Waiting in prefetch queue                |
+| `running` / `fetching`                      | Worker active — blocks duplicate enqueue |
 | `completed`, `failed`, `cancelled`, `error` | Terminal (brief) before return to `idle` |
 
 **`room.last_outcome`** — result of the **last finished** run (`completed` \| `failed` \| `cancelled` \| `error` \| `null`). Not cleared when a new run starts; use for “last result” UI.
@@ -556,109 +556,109 @@ erDiagram
 
 #### `user`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `user_id` | TEXT PK | UUID |
-| `password_hash` | TEXT | Argon2 |
+| Column          | Type    | Notes  |
+| --------------- | ------- | ------ |
+| `user_id`       | TEXT PK | UUID   |
+| `password_hash` | TEXT    | Argon2 |
 
 #### `user_hash`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `user_id` | TEXT FK → `user` | CASCADE delete |
-| `hash` | TEXT FK → `hash_config` | CASCADE delete |
-| `config_name` | TEXT | Per-user display name |
-| `is_active` | BOOLEAN | Default `true`; Stremio filter |
+| Column        | Type                    | Notes                          |
+| ------------- | ----------------------- | ------------------------------ |
+| `user_id`     | TEXT FK → `user`        | CASCADE delete                 |
+| `hash`        | TEXT FK → `hash_config` | CASCADE delete                 |
+| `config_name` | TEXT                    | Per-user display name          |
+| `is_active`   | BOOLEAN                 | Default `true`; Stremio filter |
 
 PK: `(user_id, hash)`.
 
 #### `hash_config`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `hash` | TEXT PK | SHA-256 hex |
-| `config_type` | TEXT | `xtreme` \| `direct` (DB enum spelling) |
-| `room_id` | BIGINT FK → `room` | SET NULL on room delete |
-| `last_synced_at` | TIMESTAMPTZ | Updated on successful sync |
+| Column           | Type               | Notes                                   |
+| ---------------- | ------------------ | --------------------------------------- |
+| `hash`           | TEXT PK            | SHA-256 hex                             |
+| `config_type`    | TEXT               | `xtreme` \| `direct` (DB enum spelling) |
+| `room_id`        | BIGINT FK → `room` | SET NULL on room delete                 |
+| `last_synced_at` | TIMESTAMPTZ        | Updated on successful sync              |
 
 #### `room`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `id` | BIGSERIAL PK | |
-| `triggered_by` | TEXT FK → `user` | Or `scheduler` synthetic user |
-| `status` | TEXT | See lifecycle above |
-| `sync_percent` | INTEGER | 0–100 |
-| `sync_phase` | TEXT | e.g. `auth`, `live`, `vod`, `series`, `m3u`, `db` |
-| `sync_bytes_read` | INTEGER | |
-| `sync_bytes_total` | INTEGER | |
-| `logs_tail` | TEXT | Legacy tail |
-| `closed_reason` | TEXT | |
-| `last_outcome` | TEXT | `completed` \| `failed` \| `cancelled` \| `error` |
-| `created_at`, `updated_at` | TIMESTAMPTZ | |
+| Column                     | Type             | Notes                                             |
+| -------------------------- | ---------------- | ------------------------------------------------- |
+| `id`                       | BIGSERIAL PK     |                                                   |
+| `triggered_by`             | TEXT FK → `user` | Or `scheduler` synthetic user                     |
+| `status`                   | TEXT             | See lifecycle above                               |
+| `sync_percent`             | INTEGER          | 0–100                                             |
+| `sync_phase`               | TEXT             | e.g. `auth`, `live`, `vod`, `series`, `m3u`, `db` |
+| `sync_bytes_read`          | INTEGER          |                                                   |
+| `sync_bytes_total`         | INTEGER          |                                                   |
+| `logs_tail`                | TEXT             | Legacy tail                                       |
+| `closed_reason`            | TEXT             |                                                   |
+| `last_outcome`             | TEXT             | `completed` \| `failed` \| `cancelled` \| `error` |
+| `created_at`, `updated_at` | TIMESTAMPTZ      |                                                   |
 
 #### `xtream_configs`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `hash_id` | TEXT FK → `hash_config` | CASCADE |
-| `url` | TEXT | Panel URL |
-| `username` | TEXT | |
-| `password_enc` | TEXT | Encrypted at rest |
-| `custom_epg`, `has_custom_epg`, `epg_url`, `epg_offset` | | EPG options |
+| Column                                                  | Type                    | Notes             |
+| ------------------------------------------------------- | ----------------------- | ----------------- |
+| `hash_id`                                               | TEXT FK → `hash_config` | CASCADE           |
+| `url`                                                   | TEXT                    | Panel URL         |
+| `username`                                              | TEXT                    |                   |
+| `password_enc`                                          | TEXT                    | Encrypted at rest |
+| `custom_epg`, `has_custom_epg`, `epg_url`, `epg_offset` |                         | EPG options       |
 
 #### `direct_configs`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `hash_id` | TEXT FK → `hash_config` | CASCADE |
-| `m3u_url` | TEXT | |
-| `epg_url`, `has_custom_epg`, `epg_offset` | | |
+| Column                                    | Type                    | Notes   |
+| ----------------------------------------- | ----------------------- | ------- |
+| `hash_id`                                 | TEXT FK → `hash_config` | CASCADE |
+| `m3u_url`                                 | TEXT                    |         |
+| `epg_url`, `has_custom_epg`, `epg_offset` |                         |         |
 
 #### `scheduler`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `hash_id` | TEXT UNIQUE FK | CASCADE |
-| `next_trigger_at` | TIMESTAMPTZ | |
-| `interval_minutes` | INTEGER | Default 1440 |
+| Column             | Type           | Notes        |
+| ------------------ | -------------- | ------------ |
+| `hash_id`          | TEXT UNIQUE FK | CASCADE      |
+| `next_trigger_at`  | TIMESTAMPTZ    |              |
+| `interval_minutes` | INTEGER        | Default 1440 |
 
 #### `fetch_timing`
 
-| Column | Type | Notes |
-| --- | --- | --- |
+| Column    | Type    | Notes                                        |
+| --------- | ------- | -------------------------------------------- |
 | `hash_id` | TEXT FK | Completed sync durations for queue estimates |
 
 #### `room_log_line`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `hash`, `seq` | PK | Monotonic per hash |
-| `line`, `tone`, `kind` | TEXT | SSE log payload |
-| `log_key`, `sector`, `status` | TEXT | Sector rows |
-| `bytes_read`, `bytes_total`, `sector_percent` | INTEGER | |
-| `room_id` | BIGINT FK | Optional |
+| Column                                        | Type      | Notes              |
+| --------------------------------------------- | --------- | ------------------ |
+| `hash`, `seq`                                 | PK        | Monotonic per hash |
+| `line`, `tone`, `kind`                        | TEXT      | SSE log payload    |
+| `log_key`, `sector`, `status`                 | TEXT      | Sector rows        |
+| `bytes_read`, `bytes_total`, `sector_percent` | INTEGER   |                    |
+| `room_id`                                     | BIGINT FK | Optional           |
 
 Logs persist after sync until the next run (then wiped + `log_reset` SSE).
 
 #### `stream_event_resume`
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `hash` | TEXT PK | |
-| `last_sequence` | INTEGER | Room events SSE |
-| `last_log_sequence` | INTEGER | Log stream SSE |
+| Column              | Type    | Notes           |
+| ------------------- | ------- | --------------- |
+| `hash`              | TEXT PK |                 |
+| `last_sequence`     | INTEGER | Room events SSE |
+| `last_log_sequence` | INTEGER | Log stream SSE  |
 
 ### Catalog tables (per `hash`)
 
 Replaced atomically on each successful sync (delete all rows for hash, insert new tree).
 
-| Table | Role |
-| --- | --- |
-| `live_category`, `live_stream` | Live TV |
-| `movie_category`, `movie_stream` | VOD |
-| `series_category`, `series_stream` | Series |
-| `series_episode` | Direct M3U episodes; Xtream episodes fetched at meta time |
+| Table                              | Role                                                      |
+| ---------------------------------- | --------------------------------------------------------- |
+| `live_category`, `live_stream`     | Live TV                                                   |
+| `movie_category`, `movie_stream`   | VOD                                                       |
+| `series_category`, `series_stream` | Series                                                    |
+| `series_episode`                   | Direct M3U episodes; Xtream episodes fetched at meta time |
 
 Streams reference `category_internal_id` → category row. Indexes on `(hash, name)` and trigram GIN on `name` for search.
 
@@ -668,21 +668,21 @@ Links `room_id` + `hash_id` during active fetch tracking.
 
 ### Cascade summary
 
-| Action | Effect |
-| --- | --- |
-| Delete `user` | Cascades `user_hash` |
+| Action                           | Effect                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------- |
+| Delete `user`                    | Cascades `user_hash`                                                             |
 | Delete last `user_hash` for hash | Deletes `hash_config` → provider, catalog, scheduler, logs, room (via app logic) |
-| Delete `hash_config` | Cascades provider + catalog + `scheduler` + `fetch_timing` + `room_log_line` |
+| Delete `hash_config`             | Cascades provider + catalog + `scheduler` + `fetch_timing` + `room_log_line`     |
 
 ---
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [README.md](../README.md) | Deploy, env vars, self-hosting |
-| [backend-reference.md](backend-reference.md) | Implementation architecture and runtime behavior |
-| [api-error-codes.md](api-error-codes.md) | REST error codes |
-| [`.cursor/rules/backend-reference-maintenance.mdc`](../.cursor/rules/backend-reference-maintenance.mdc) | When and how agents update these docs |
+| Document                                                                                                | Purpose                                          |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| [README.md](../README.md)                                                                               | Deploy, env vars, self-hosting                   |
+| [backend-reference.md](backend-reference.md)                                                            | Implementation architecture and runtime behavior |
+| [api-error-codes.md](api-error-codes.md)                                                                | REST error codes                                 |
+| [`.cursor/rules/backend-reference-maintenance.mdc`](../.cursor/rules/backend-reference-maintenance.mdc) | When and how agents update these docs            |
 
 When REST contracts or schema change, update this file and [api-error-codes.md](api-error-codes.md) in the same change.

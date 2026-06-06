@@ -1,3 +1,10 @@
+/** Parsed `#EXTINF` attribute fields before URL pairing. */
+export type M3uExtinfLineParts = {
+  displayTitle: string;
+  groupTitle: string | null;
+  logo: string | null;
+};
+
 /** In-memory M3U row before grouping into Stremio catalog tables. */
 
 export type M3uParsedEntry = {

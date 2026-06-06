@@ -3,7 +3,7 @@ import { stdin } from "node:process";
 
 import { runDirectPrefetchSyncJob } from "@/core/directPrefetchSync";
 import { runXtreamPrefetchSyncJob } from "@/core/xtreamPrefetchSync";
-import { QUEUE_JOB_SOURCE } from "@/constants/queue.constants";
+import { QUEUE_JOB_SOURCE } from "@/constants/scheduler.constants";
 import { CONFIG_TYPE } from "@/constants/stream.constants";
 import { getConfigType } from "@/database/common.db";
 import type { PrefetchSyncWorkerJobPayload, QueueJob } from "@/types/queue.types";

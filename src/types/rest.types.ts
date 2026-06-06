@@ -42,6 +42,31 @@ export type PostConfigDirectRequestBody = {
 
 export type PostConfigRequestBody = PostConfigXtreamRequestBody | PostConfigDirectRequestBody;
 
+/** Parsed `POST`/`PUT /api/configs` body after field coercion (no `unknown`). */
+export type ValidatedPostConfigXtream = {
+  type: "xtream";
+  configName: string;
+  customEpg: string | null;
+  epgOffset: number;
+  epgUrl: string | null;
+  hasCustomEpg: boolean;
+  panelPassword: string;
+  panelUrl: string;
+  panelUsername: string;
+};
+
+/** Parsed direct config body after field coercion (no `unknown`). */
+export type ValidatedPostConfigDirect = {
+  type: "direct";
+  configName: string;
+  epgOffset: number;
+  epgUrl: string | null;
+  hasCustomEpg: boolean;
+  m3uUrl: string;
+};
+
+export type ValidatedPostConfigRequestBody = ValidatedPostConfigXtream | ValidatedPostConfigDirect;
+
 export type ConfigListSchedulerSnapshot = SchedulerSnapshot;
 
 export type ConfigListItemXtream = {
@@ -141,6 +166,16 @@ export type PostHashCancelResponseBody =
   | { cancelled: true; kind: "queued" }
   | { cancelled: true; kind: "running" };
 
+/** Raw JSON for `PATCH /api/hashes/:hash/active`. */
+export type PatchHashActiveIngressBody = {
+  isActive?: unknown;
+};
+
+/** Parsed PATCH hash-active body after field coercion (no `unknown`). */
+export type ValidatedPatchHashActiveBody = {
+  isActive: boolean;
+};
+
 /** PATCH `/api/hashes/:hash/active` */
 export type PatchHashActiveResponseBody = {
   hash: string;
@@ -152,8 +187,36 @@ export type AuthUserResponseBody = {
   userId: string;
 };
 
-/** POST `/api/auth/change-password` */
+/** Raw JSON for `POST /api/auth/register`. */
+export type PostRegisterRequestBody = {
+  password?: unknown;
+};
+
+/** Parsed register body after field coercion (no `unknown`). */
+export type ValidatedPostRegisterRequestBody = {
+  password: string;
+};
+
+/** Raw JSON for `POST /api/auth/login`. */
+export type PostLoginRequestBody = {
+  password?: unknown;
+  userId?: unknown;
+};
+
+/** Parsed login body after field coercion (no `unknown`). */
+export type ValidatedPostLoginRequestBody = {
+  password: string;
+  userId: string;
+};
+
+/** Raw JSON for `POST /api/auth/change-password`. */
 export type PostChangePasswordRequestBody = {
+  currentPassword?: unknown;
+  newPassword?: unknown;
+};
+
+/** Parsed change-password body after field coercion (no `unknown`). */
+export type ValidatedPostChangePasswordRequestBody = {
   currentPassword: string;
   newPassword: string;
 };

@@ -1,3 +1,24 @@
+/** Canonical JSON object hashed for Xtream config identity (`v` bump only when hash semantics change). */
+export type XtreamCanonicalPayload = {
+  custom_epg: string;
+  epg_offset: number;
+  epg_url: string;
+  has_custom_epg: boolean;
+  panel_password: string;
+  panel_username: string;
+  url: string;
+  v: 1;
+};
+
+/** Canonical JSON object hashed for Direct config identity (`v` bump only when hash semantics change). */
+export type DirectCanonicalPayload = {
+  epg_offset: number;
+  epg_url: string;
+  has_custom_epg: boolean;
+  m3u_url: string;
+  v: 1;
+};
+
 /** Fields used for SHA-256 Xtream config hash (includes panel credentials). */
 export type XtreamHashInput = {
   panelUrl: string;
@@ -71,3 +92,7 @@ export type UserConfigListDbRow = {
   xtream_url: string | null;
   xtream_username: string | null;
 };
+
+export type RemoveLastUserHashResult =
+  | { ok: true }
+  | { ok: false; reason: "HASH_SYNC_ALREADY_ACTIVE" };

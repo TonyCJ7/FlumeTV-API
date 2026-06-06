@@ -14,6 +14,7 @@ import {
   directStreamPlaybackFactory,
   xtremeStreamPlaybackFactory,
 } from "@/factories/streamPlayback.factory";
+import { streamWithConfigFromDbRow } from "@/factories/streamWithConfig.factory";
 import { fetchXtremeSeriesInfo, fetchXtremeVodInfo } from "@/services/xtreamMeta.services";
 import type { StreamWithConfig } from "@/types/stream.types";
 import type {
@@ -249,7 +250,9 @@ export async function addonStreamHandler(args: {
 
     const playbackKey = videoIdTrimmed || _trim(_toString(stream_id));
     const parsedId = _toString(id);
-    const streamWithConfig = await getStreamAndConfigById(parsedId, type, userId);
+    const streamWithConfig = streamWithConfigFromDbRow(
+      await getStreamAndConfigById(parsedId, type, userId),
+    );
     const configType = streamWithConfig.config_type;
 
     if (configType === CONFIG_TYPE.DIRECT) {

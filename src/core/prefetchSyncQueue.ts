@@ -38,9 +38,6 @@ import {
 import { dlog, logError, logInfo } from "@/utils/debug.utils";
 import _trim from "lodash/trim";
 
-export type { PrefetchSyncQueueDepth } from "@/core/prefetchSyncQueueState";
-export { getPrefetchSyncQueueDepth, getWaitingPrefetchJob } from "@/core/prefetchSyncQueueState";
-
 /** Set when `killPrefetchWorker` was used so terminal handling marks `cancelled` instead of `failed`. */
 const pendingUserCancelHashes = new Set<string>();
 

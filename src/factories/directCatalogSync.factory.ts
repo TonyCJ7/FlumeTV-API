@@ -6,14 +6,19 @@ import type {
   FormattedDirectCatalog,
   M3uParsedEntry,
 } from "@/types/directSync.types";
-import { trimmedOrFallback } from "@/utils/common.utils";
-import { parseSeasonEpisodeFromTitle } from "@/utils/title.utils";
-import { fileExtensionFromUrl } from "@/utils/url.utils";
+import {
+  fileExtensionFromUrl,
+  parseSeasonEpisodeFromTitle,
+} from "@/utils/directCatalogLabel.utils";
 import _map from "lodash/map";
 import _toLower from "lodash/toLower";
 import _trim from "lodash/trim";
 
 const DEFAULT_RATING = "0";
+
+function trimmedOrFallback(trimmed: string, fallback: string): string {
+  return trimmed.length > 0 ? trimmed : fallback;
+}
 
 function looksMovieLike(groupTitle: string | null, url: string): boolean {
   const g = _toLower(groupTitle ?? "");

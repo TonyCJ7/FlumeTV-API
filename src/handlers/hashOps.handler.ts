@@ -1,8 +1,7 @@
 import type { Request, Response } from "express";
-import _isBoolean from "lodash/isBoolean";
 
 import { REST_ERROR_CODES } from "@/constants/errorCodes.constants";
-import { QUEUE_JOB_SOURCE } from "@/constants/queue.constants";
+import { QUEUE_JOB_SOURCE } from "@/constants/scheduler.constants";
 import { ACTIVE_SYNC_ROOM_STATUSES } from "@/constants/room.constants";
 import {
   cancelQueuedPrefetchJob,
@@ -27,22 +26,10 @@ import type {
   PostHashCancelResponseBody,
   PostHashRefetchResponseBody,
 } from "@/types/rest.types";
+import { parseHashPathParam, parsePatchHashActiveBody } from "@/utils/hashOpsIngress.utils";
 import { sendKnownRestError } from "@/utils/restError.utils";
 
 const activeSyncRoomStatuses = new Set<string>(ACTIVE_SYNC_ROOM_STATUSES);
-
-function parseHashPathParam(raw: unknown): string | null {
-  if (typeof raw !== "string" || raw.length === 0) {
-    return null;
-  }
-
-  try {
-    const decoded = decodeURIComponent(raw);
-    return decoded.length > 0 ? decoded : null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * POST `/api/hashes/:hash/refetch` — enqueue prefetch if none is active for this hash (same queue as new-config / scheduler).
@@ -190,15 +177,17 @@ export async function handlePatchHashActive(req: Request, res: Response): Promis
     return;
   }
 
-  const raw = (req.body as { isActive?: unknown }).isActive;
+  const validated = parsePatchHashActiveBody(req.body);
 
-  if (!_isBoolean(raw)) {
+  if (!validated) {
     sendKnownRestError(res, REST_ERROR_CODES.CONFIG_BODY_INVALID);
     return;
   }
 
-  await updateUserHashIsActive({ hash, isActive: raw, userId });
+  const { isActive } = validated;
 
-  const body: PatchHashActiveResponseBody = { hash, isActive: raw };
+  await updateUserHashIsActive({ hash, isActive, userId });
+
+  const body: PatchHashActiveResponseBody = { hash, isActive };
   res.status(200).json(body);
 }

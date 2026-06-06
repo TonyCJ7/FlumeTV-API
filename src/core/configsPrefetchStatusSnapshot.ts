@@ -1,4 +1,4 @@
-import { isTerminalRoomStatus } from "@/constants/room.constants";
+import { isTerminalRoomStatus } from "@/utils/room.utils";
 import { getPrefetchSyncQueueDepth, getWaitingPrefetchJob } from "@/core/prefetchSyncQueueState";
 import { listUserConfigRows } from "@/database/providerConfig.db";
 import { getRoomSseSnapshot } from "@/database/room.db";

@@ -1,18 +1,20 @@
 import { randomUUID } from "crypto";
 import type { Request, Response } from "express";
 import _isEmpty from "lodash/isEmpty";
-import _toString from "lodash/toString";
-import _trim from "lodash/trim";
 
+import { MIN_PASSWORD_LENGTH } from "@/constants/auth.constants";
 import { REST_ERROR_CODES } from "@/constants/errorCodes.constants";
 import { getPasswordHash, insertUser, updateUserPasswordHash } from "@/database/user.db";
 import type { AuthUserResponseBody, PostLogoutResponseBody } from "@/types/rest.types";
+import {
+  parseChangePasswordBody,
+  parseLoginBody,
+  parseRegisterBody,
+} from "@/utils/authRequestBody.utils";
 import { dlog, logError } from "@/utils/debug.utils";
 import { hashPassword, verifyPassword } from "@/utils/password.utils";
 import { sendKnownRestError } from "@/utils/restError.utils";
 import { clearSessionCookie, setSessionCookie, signSessionToken } from "@/utils/session.utils";
-
-const MIN_PASSWORD_LENGTH = 8;
 
 function isPgUniqueViolation(error: unknown): boolean {
   if (!error || typeof error !== "object") {
@@ -25,8 +27,14 @@ function isPgUniqueViolation(error: unknown): boolean {
 }
 
 export async function handleRegister(req: Request, res: Response): Promise<void> {
-  const passwordRaw = (req.body as { password?: unknown })?.password;
-  const password = _trim(_toString(passwordRaw));
+  const validated = parseRegisterBody(req.body);
+
+  if (!validated) {
+    sendKnownRestError(res, REST_ERROR_CODES.AUTH_BODY_INVALID);
+    return;
+  }
+
+  const { password } = validated;
 
   if (_isEmpty(password) || password.length < MIN_PASSWORD_LENGTH) {
     sendKnownRestError(
@@ -80,9 +88,14 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
 }
 
 export async function handleLogin(req: Request, res: Response): Promise<void> {
-  const body = req.body as { userId?: unknown; password?: unknown };
-  const userId = _trim(_toString(body.userId));
-  const password = _trim(_toString(body.password));
+  const validated = parseLoginBody(req.body);
+
+  if (!validated) {
+    sendKnownRestError(res, REST_ERROR_CODES.AUTH_BODY_INVALID);
+    return;
+  }
+
+  const { userId, password } = validated;
 
   if (_isEmpty(userId) || _isEmpty(password)) {
     sendKnownRestError(res, REST_ERROR_CODES.AUTH_BODY_INVALID);
@@ -131,9 +144,14 @@ export async function handleGetMe(req: Request, res: Response): Promise<void> {
 }
 
 export async function handleChangePassword(req: Request, res: Response): Promise<void> {
-  const body = req.body as { currentPassword?: unknown; newPassword?: unknown };
-  const currentPassword = _trim(_toString(body.currentPassword));
-  const newPassword = _trim(_toString(body.newPassword));
+  const validated = parseChangePasswordBody(req.body);
+
+  if (!validated) {
+    sendKnownRestError(res, REST_ERROR_CODES.CHANGE_PASSWORD_BODY_INVALID);
+    return;
+  }
+
+  const { currentPassword, newPassword } = validated;
 
   if (_isEmpty(currentPassword) || _isEmpty(newPassword)) {
     sendKnownRestError(res, REST_ERROR_CODES.CHANGE_PASSWORD_BODY_INVALID);

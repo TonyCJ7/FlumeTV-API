@@ -20,7 +20,7 @@ const ANSI = {
 } as const;
 
 /** Respects `NO_COLOR`, non-TTY stdout, and optional `LOG_COLOR=false`. */
-export const isLogColorEnabled = (): boolean => {
+const isLogColorEnabled = (): boolean => {
   if (process.stdout.isTTY !== true) {
     return false;
   }

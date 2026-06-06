@@ -7,7 +7,7 @@ import { getPool } from "./pgPool.utils";
 export async function getEpisodeRow(
   episodeRowId: string,
   seriesStreamRowId: string,
-): Promise<SeriesEpisode> {
+): Promise<SeriesEpisode | undefined> {
   const { rows } = await getPool().query<SeriesEpisode>(
     /* sql */ `
       SELECT
@@ -21,7 +21,7 @@ export async function getEpisodeRow(
     [episodeRowId, seriesStreamRowId],
   );
 
-  return rows[0] as SeriesEpisode;
+  return rows[0];
 }
 
 /** `series_id` column FK targets `series_stream.id` (internal row id). */

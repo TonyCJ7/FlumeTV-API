@@ -1,5 +1,6 @@
 import { TABLE_NAMES } from "@/constants/dbBuild.constants";
 import type {
+  AppendRoomLogStreamLineParams,
   RoomLogKind,
   RoomLogSectorStatus,
   RoomLogStreamSqlRow,
@@ -12,21 +13,6 @@ import { withPgTransaction } from "./pgTransaction.utils";
 import { nextLogEventSequenceForHashInTx } from "./streamEventResume.db";
 
 const LOG_REPLAY_MAX_LINES = 500;
-
-export type AppendRoomLogStreamLineParams = {
-  bytesRead?: number | null;
-  bytesTotal?: number | null;
-  hash: string;
-  kind?: RoomLogKind;
-  level?: string;
-  line: string;
-  logKey?: string | null;
-  roomId: number;
-  sector?: string | null;
-  sectorPercent?: number | null;
-  status?: RoomLogSectorStatus | null;
-  tone?: RoomLogTone;
-};
 
 async function insertRoomLogLine(
   client: import("pg").PoolClient,

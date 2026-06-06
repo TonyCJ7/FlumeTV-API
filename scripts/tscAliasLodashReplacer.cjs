@@ -5,13 +5,10 @@
  * @param {{ orig: string }} args
  */
 exports.default = function lodashEsmReplacer({ orig }) {
-  return orig.replace(
-    /(["'])lodash\/([^"']+)\1/g,
-    (match, quote, subpath) => {
-      if (subpath.endsWith(".js")) {
-        return match;
-      }
-      return `${quote}lodash/${subpath}.js${quote}`;
-    },
-  );
+  return orig.replace(/(["'])lodash\/([^"']+)\1/g, (match, quote, subpath) => {
+    if (subpath.endsWith(".js")) {
+      return match;
+    }
+    return `${quote}lodash/${subpath}.js${quote}`;
+  });
 };

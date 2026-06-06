@@ -7,7 +7,12 @@ import _sortBy from "lodash/sortBy";
 import _toLower from "lodash/toLower";
 import _trim from "lodash/trim";
 
-import type { DirectHashInput, XtreamHashInput } from "@/types/provider.types";
+import type {
+  DirectCanonicalPayload,
+  DirectHashInput,
+  XtreamCanonicalPayload,
+  XtreamHashInput,
+} from "@/types/provider.types";
 
 /**
  * Lexicographic key order at every object level; deterministic JSON for hashing.
@@ -50,7 +55,7 @@ function sha256HexOfCanonicalUtf8(canonicalJson: string): string {
  * Normalizes URLs for hashing: lowercase host, trim trailing `/` on path, drop `#fragment`,
  * keep whatever userinfo/query/path the URL already has (encoded consistently).
  */
-export function normalizeProviderUrl(raw: string): string {
+function normalizeProviderUrl(raw: string): string {
   const trimmed = _trim(raw);
   if (!trimmed) {
     return "";
@@ -75,7 +80,7 @@ export function normalizeProviderUrl(raw: string): string {
 }
 
 /** Canonical object for Xtream hash (includes panel credentials). Bump `v` only when hash semantics change in production. */
-export function buildXtreamCanonicalPayload(input: XtreamHashInput): Record<string, unknown> {
+function buildXtreamCanonicalPayload(input: XtreamHashInput): XtreamCanonicalPayload {
   const normalizedUrl = normalizeProviderUrl(input.panelUrl);
   const normalizedEpgUrl = normalizeProviderUrl(input.epgUrl ?? "");
 
@@ -92,7 +97,7 @@ export function buildXtreamCanonicalPayload(input: XtreamHashInput): Record<stri
 }
 
 /** Canonical object for Direct hash. Bump `v` only when hash semantics change in production. */
-export function buildDirectCanonicalPayload(input: DirectHashInput): Record<string, unknown> {
+function buildDirectCanonicalPayload(input: DirectHashInput): DirectCanonicalPayload {
   const normalizedM3u = normalizeProviderUrl(input.m3uUrl);
   const normalizedEpgUrl = normalizeProviderUrl(input.epgUrl ?? "");
 

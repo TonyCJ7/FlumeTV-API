@@ -1,6 +1,6 @@
 import type { Response } from "express";
 
-import { isTerminalRoomStatus } from "@/constants/room.constants";
+import { isTerminalRoomStatus } from "@/utils/room.utils";
 import { getRoomSseSnapshot } from "@/database/room.db";
 import { listRoomLogStreamLinesAfter } from "@/database/roomLogStream.db";
 import type { RoomLogSsePayload, RoomSyncProgress } from "@/types/room.types";
@@ -121,13 +121,6 @@ export function broadcastRoomLogSseProgress(hash: string, progress: RoomSyncProg
   if (clients.size === 0) {
     hashToLogClients.delete(hash);
   }
-}
-
-/**
- * Open **`/logs/stream`** subscriber count for one hash (all tabs / users on that hash).
- */
-export function getLogStreamSubscriberCount(hash: string): number {
-  return hashToLogClients.get(hash)?.size ?? 0;
 }
 
 /**

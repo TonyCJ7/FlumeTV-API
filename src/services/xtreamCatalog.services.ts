@@ -1,7 +1,6 @@
 import _isArray from "lodash/isArray";
 import _map from "lodash/map";
 import _uniq from "lodash/uniq";
-import type { Dictionary } from "lodash";
 
 import { SYNC_FETCH_MS_FALLBACK, XTREAM_CATALOG_TIMEOUT_MS } from "@/constants/scheduler.constants";
 import { outboundAxios } from "@/services/outboundAxios.config";
@@ -12,11 +11,16 @@ import {
   xtreamSeriesStreamsFactory,
   xtreamVodStreamsFactory,
 } from "@/factories/xtreamCatalogSync.factory";
-import type { FormattedXtreamCatalog } from "@/types/xtreamSync.types";
+import type {
+  FormattedXtreamCatalog,
+  XtreamPanelCategoryRow,
+  XtreamPanelStreamRow,
+  XtreamUserInfoIngress,
+} from "@/types/xtreamSync.types";
 import type { RoomSyncProgress } from "@/types/room.types";
-import { getXtremeCompleteBaseUrl } from "@/utils/common.utils";
+import type { PrefetchSectorLogEmitter, PrefetchSyncLogFn } from "@/types/prefetchWorker.types";
 import { dlog, logError } from "@/utils/debug.utils";
-import type { PrefetchSectorLogEmitter, PrefetchSyncLogFn } from "@/utils/prefetchWorkerLog.utils";
+import { buildXtreamPlayerApiUrl, parseXtreamUserInfoIngress } from "@/utils/xtreamMeta.utils";
 import {
   computeHybridSlicePercent,
   estimatedPhaseMsFromJobEstimate,
@@ -38,7 +42,11 @@ type XtreamSectorLogSlice = {
 };
 
 /** Xtream `player_api.php` fetch; response body must be a list array or it becomes `[]`. */
-export async function fetchXtreamPlayerApiJson(
+export async function fetchXtreamPlayerApiJson<
+  TRow extends XtreamPanelCategoryRow | XtreamPanelStreamRow =
+    | XtreamPanelCategoryRow
+    | XtreamPanelStreamRow,
+>(
   panelBaseUrl: string,
   username: string,
   password: string,
@@ -49,8 +57,8 @@ export async function fetchXtreamPlayerApiJson(
     progressSlice?: XtreamFetchProgressSlice;
     sectorLog?: XtreamSectorLogSlice;
   },
-): Promise<Dictionary<unknown>[]> {
-  const completeUrl = getXtremeCompleteBaseUrl(panelBaseUrl, username, password);
+): Promise<TRow[]> {
+  const completeUrl = buildXtreamPlayerApiUrl(panelBaseUrl, username, password);
   const slice = options?.progressSlice;
   const sectorLog = options?.sectorLog;
   const requestStartedAt = Date.now();
@@ -75,46 +83,49 @@ export async function fetchXtreamPlayerApiJson(
   let lastBytesRead = 0;
   let lastBytesTotal: number | null = null;
 
-  const response = await outboundAxios.get<unknown>(`${completeUrl}&action=${action}`, {
-    onDownloadProgress: (event) => {
-      const bytesRead = event.loaded;
-      const bytesTotal = parseHttpContentLength(event.total);
-      lastBytesRead = bytesRead;
-      lastBytesTotal = bytesTotal;
+  const response = await outboundAxios.get<(XtreamPanelCategoryRow | XtreamPanelStreamRow)[]>(
+    `${completeUrl}&action=${action}`,
+    {
+      onDownloadProgress: (event) => {
+        const bytesRead = event.loaded;
+        const bytesTotal = parseHttpContentLength(event.total);
+        lastBytesRead = bytesRead;
+        lastBytesTotal = bytesTotal;
 
-      if (sectorLog) {
-        sectorLog.emitter.inProgress({
+        if (sectorLog) {
+          sectorLog.emitter.inProgress({
+            bytesRead,
+            bytesTotal,
+            line: sectorLog.inProgressLine,
+            logKey: sectorLog.logKey,
+            sector: sectorLog.sector,
+          });
+        }
+
+        if (!slice || !options?.onProgress) {
+          return;
+        }
+
+        const elapsedMs = Date.now() - requestStartedAt;
+        const percent = computeHybridSlicePercent({
           bytesRead,
           bytesTotal,
-          line: sectorLog.inProgressLine,
-          logKey: sectorLog.logKey,
-          sector: sectorLog.sector,
+          elapsedMs,
+          estimatedPhaseMs,
+          phaseStart: slice.phaseStart,
+          phaseWeight: slice.phaseWeight,
         });
-      }
 
-      if (!slice || !options?.onProgress) {
-        return;
-      }
-
-      const elapsedMs = Date.now() - requestStartedAt;
-      const percent = computeHybridSlicePercent({
-        bytesRead,
-        bytesTotal,
-        elapsedMs,
-        estimatedPhaseMs,
-        phaseStart: slice.phaseStart,
-        phaseWeight: slice.phaseWeight,
-      });
-
-      options.onProgress({
-        bytesRead,
-        bytesTotal,
-        percent,
-        phase: slice.phase,
-      });
+        options.onProgress({
+          bytesRead,
+          bytesTotal,
+          percent,
+          phase: slice.phase,
+        });
+      },
+      timeout: XTREAM_CATALOG_TIMEOUT_MS,
     },
-    timeout: XTREAM_CATALOG_TIMEOUT_MS,
-  });
+  );
 
   const data = response.data;
 
@@ -138,7 +149,7 @@ export async function fetchXtreamPlayerApiJson(
   }
 
   if (_isArray(data)) {
-    return data;
+    return data as TRow[];
   }
 
   return [];
@@ -170,11 +181,14 @@ async function assertXtreamCredentialsValid(
     sector: "auth",
   });
 
-  const completeUrl = getXtremeCompleteBaseUrl(creds.panelBaseUrl, creds.username, creds.password);
+  const completeUrl = buildXtreamPlayerApiUrl(creds.panelBaseUrl, creds.username, creds.password);
 
-  const response = await outboundAxios.get<unknown>(`${completeUrl}&action=get_user_info`, {
-    timeout: XTREAM_CATALOG_TIMEOUT_MS,
-  });
+  const response = await outboundAxios.get<XtreamUserInfoIngress | unknown[]>(
+    `${completeUrl}&action=get_user_info`,
+    {
+      timeout: XTREAM_CATALOG_TIMEOUT_MS,
+    },
+  );
   const parsed = response.data;
 
   if (Array.isArray(parsed)) {
@@ -186,8 +200,18 @@ async function assertXtreamCredentialsValid(
     throw new Error("Invalid username or password");
   }
 
-  const obj = parsed as { user_info?: { auth?: number } | null };
-  const ui = obj?.user_info;
+  const ingress = parseXtreamUserInfoIngress(parsed);
+
+  if (!ingress) {
+    sectorLog?.error({
+      line: "Invalid username or password",
+      logKey: "auth:validate",
+      sector: "auth",
+    });
+    throw new Error("Invalid username or password");
+  }
+
+  const ui = ingress.user_info;
 
   if (ui == null || (typeof ui === "object" && ui.auth === 0)) {
     sectorLog?.error({
@@ -218,7 +242,7 @@ async function fetchAndFormatLiveTvCatalogSection(
   const onProgress = progress?.onProgress;
   const fetchOptions = { estimatedSyncMs: progress?.estimatedSyncMs, onProgress };
 
-  const liveCategoryRows = await fetchXtreamPlayerApiJson(
+  const liveCategoryRows = await fetchXtreamPlayerApiJson<XtreamPanelCategoryRow>(
     panelBaseUrl,
     username,
     password,
@@ -241,7 +265,7 @@ async function fetchAndFormatLiveTvCatalogSection(
   );
   const liveCategoriesFromPanel = xtreamCategoriesFromPanelFactory(liveCategoryRows);
 
-  const liveStreamRows = await fetchXtreamPlayerApiJson(
+  const liveStreamRows = await fetchXtreamPlayerApiJson<XtreamPanelStreamRow>(
     panelBaseUrl,
     username,
     password,
@@ -287,7 +311,7 @@ async function fetchAndFormatVodCatalogSection(
   const onProgress = progress?.onProgress;
   const fetchOptions = { estimatedSyncMs: progress?.estimatedSyncMs, onProgress };
 
-  const movieCategoryRows = await fetchXtreamPlayerApiJson(
+  const movieCategoryRows = await fetchXtreamPlayerApiJson<XtreamPanelCategoryRow>(
     panelBaseUrl,
     username,
     password,
@@ -310,7 +334,7 @@ async function fetchAndFormatVodCatalogSection(
   );
   const movieCategoriesFromPanel = xtreamCategoriesFromPanelFactory(movieCategoryRows);
 
-  const movieStreamRows = await fetchXtreamPlayerApiJson(
+  const movieStreamRows = await fetchXtreamPlayerApiJson<XtreamPanelStreamRow>(
     panelBaseUrl,
     username,
     password,
@@ -356,7 +380,7 @@ async function fetchAndFormatSeriesCatalogSection(
   const onProgress = progress?.onProgress;
   const fetchOptions = { estimatedSyncMs: progress?.estimatedSyncMs, onProgress };
 
-  const seriesCategoryRows = await fetchXtreamPlayerApiJson(
+  const seriesCategoryRows = await fetchXtreamPlayerApiJson<XtreamPanelCategoryRow>(
     panelBaseUrl,
     username,
     password,
@@ -379,7 +403,7 @@ async function fetchAndFormatSeriesCatalogSection(
   );
   const seriesCategoriesFromPanel = xtreamCategoriesFromPanelFactory(seriesCategoryRows);
 
-  const seriesListRows = await fetchXtreamPlayerApiJson(
+  const seriesListRows = await fetchXtreamPlayerApiJson<XtreamPanelStreamRow>(
     panelBaseUrl,
     username,
     password,

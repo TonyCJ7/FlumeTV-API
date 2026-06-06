@@ -19,6 +19,8 @@ import type {
   RoomSyncProgress,
 } from "@/types/room.types";
 import { logError } from "@/utils/debug.utils";
+import { isJsonObject } from "@/utils/json.utils";
+import type { JsonObject } from "@/types/json.types";
 import {
   createThrottledPrefetchProgressReporter,
   roomLogToneFromLegacyLevel,
@@ -30,7 +32,7 @@ import type {
 
 const runningChildrenByHash = new Map<string, ChildProcess>();
 
-function parsePrefetchProgressLine(obj: Record<string, unknown>): RoomSyncProgress | null {
+function parsePrefetchProgressLine(obj: JsonObject): RoomSyncProgress | null {
   const percentRaw = obj.percent;
 
   if (typeof percentRaw !== "number" || !Number.isFinite(percentRaw)) {
@@ -57,7 +59,7 @@ function parsePrefetchProgressLine(obj: Record<string, unknown>): RoomSyncProgre
   return progress;
 }
 
-function parseRoomLogTone(obj: Record<string, unknown>): RoomLogTone {
+function parseRoomLogTone(obj: JsonObject): RoomLogTone {
   if (typeof obj.tone === "string") {
     const tone = obj.tone;
 
@@ -77,7 +79,7 @@ function parseRoomLogTone(obj: Record<string, unknown>): RoomLogTone {
   return roomLogToneFromLegacyLevel(level);
 }
 
-function parseRoomLogKind(obj: Record<string, unknown>): RoomLogKind {
+function parseRoomLogKind(obj: JsonObject): RoomLogKind {
   if (obj.kind === "sector") {
     return "sector";
   }
@@ -93,7 +95,7 @@ function parseRoomLogSectorStatus(value: unknown): RoomLogSectorStatus | undefin
   return undefined;
 }
 
-function parsePrefetchLogLinePayload(obj: Record<string, unknown>): Omit<RoomLogSsePayload, "seq"> {
+function parsePrefetchLogLinePayload(obj: JsonObject): Omit<RoomLogSsePayload, "seq"> {
   const tone = parseRoomLogTone(obj);
   const kind = parseRoomLogKind(obj);
   const line = typeof obj.line === "string" ? obj.line : "";
@@ -139,6 +141,29 @@ function parsePrefetchLogLinePayload(obj: Record<string, unknown>): Omit<RoomLog
   return payload;
 }
 
+const logPersistChainByHash = new Map<string, Promise<void>>();
+
+function enqueuePersistAndBroadcastPrefetchLogLine(
+  payload: PrefetchSyncWorkerJobPayload,
+  logPayload: Omit<RoomLogSsePayload, "seq">,
+): void {
+  const hash = payload.hash;
+  const previous = logPersistChainByHash.get(hash) ?? Promise.resolve();
+  const next = previous
+    .then(() => persistAndBroadcastPrefetchLogLine(payload, logPayload))
+    .catch((err: unknown) => {
+      logError("prefetch", "persist log line failed", hash, err);
+    });
+
+  logPersistChainByHash.set(hash, next);
+
+  void next.finally(() => {
+    if (logPersistChainByHash.get(hash) === next) {
+      logPersistChainByHash.delete(hash);
+    }
+  });
+}
+
 async function persistAndBroadcastPrefetchLogLine(
   payload: PrefetchSyncWorkerJobPayload,
   logPayload: Omit<RoomLogSsePayload, "seq">,
@@ -174,21 +199,23 @@ async function persistAndBroadcastPrefetchProgress(
   payload: PrefetchSyncWorkerJobPayload,
   progress: RoomSyncProgress,
 ): Promise<void> {
-  if (!(await roomAcceptsPrefetchProgress(payload.hash))) {
-    return;
+  const acceptsProgress = await roomAcceptsPrefetchProgress(payload.hash);
+
+  if (acceptsProgress) {
+    await updateRoomProgress({
+      bytesRead: progress.bytesRead ?? null,
+      bytesTotal: progress.bytesTotal ?? null,
+      percent: progress.percent,
+      phase: progress.phase ?? null,
+      roomId: payload.roomId,
+    });
+
+    void notifyRoomSseSubscribers(payload.hash);
+    void broadcastConfigsPrefetchStatusForHashProgress(payload.hash);
   }
 
-  await updateRoomProgress({
-    bytesRead: progress.bytesRead ?? null,
-    bytesTotal: progress.bytesTotal ?? null,
-    percent: progress.percent,
-    phase: progress.phase ?? null,
-    roomId: payload.roomId,
-  });
-
-  void notifyRoomSseSubscribers(payload.hash);
-  void broadcastConfigsPrefetchStatusForHashProgress(payload.hash);
-
+  // Log dialog reads progress from `/logs/stream` — deliver even after room returns to idle
+  // (e.g. worker emits 100% after catalog replace clears sync_percent).
   broadcastRoomLogSseProgress(payload.hash, progress);
 }
 
@@ -282,6 +309,34 @@ function parsePrefetchWorkerNodeOptions(): string[] {
     .filter((part) => part.length > 0);
 }
 
+function parseWorkerStdoutJsonLine(trimmed: string): JsonObject | null {
+  try {
+    const parsed: unknown = JSON.parse(trimmed);
+
+    if (isJsonObject(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // ignore non-JSON lines
+  }
+
+  return null;
+}
+
+function isPrefetchSyncWorkerResultMessage(
+  obj: JsonObject,
+): obj is PrefetchSyncWorkerResultMessage {
+  if (obj.type !== "prefetch_sync_result" || typeof obj.ok !== "boolean") {
+    return false;
+  }
+
+  if (obj.ok) {
+    return typeof obj.durationMs === "number" && Number.isFinite(obj.durationMs);
+  }
+
+  return typeof obj.message === "string";
+}
+
 function parseWorkerStdoutForResult(stdout: string): PrefetchSyncWorkerResultMessage | null {
   const lines = stdout.split("\n");
 
@@ -292,19 +347,10 @@ function parseWorkerStdoutForResult(stdout: string): PrefetchSyncWorkerResultMes
       continue;
     }
 
-    try {
-      const parsed: unknown = JSON.parse(line);
+    const obj = parseWorkerStdoutJsonLine(line);
 
-      if (
-        parsed &&
-        typeof parsed === "object" &&
-        "type" in parsed &&
-        (parsed as { type: string }).type === "prefetch_sync_result"
-      ) {
-        return parsed as PrefetchSyncWorkerResultMessage;
-      }
-    } catch {
-      // ignore non-JSON lines
+    if (obj && isPrefetchSyncWorkerResultMessage(obj)) {
+      return obj;
     }
   }
 
@@ -315,33 +361,31 @@ function handleWorkerStdoutLine(
   payload: PrefetchSyncWorkerJobPayload,
   trimmed: string,
 ): PrefetchSyncWorkerResultMessage | null {
-  try {
-    const obj = JSON.parse(trimmed) as Record<string, unknown>;
+  const obj = parseWorkerStdoutJsonLine(trimmed);
 
-    if (obj.type === "prefetch_progress_line") {
-      const progress = parsePrefetchProgressLine(obj);
+  if (!obj || typeof obj.type !== "string") {
+    return null;
+  }
 
-      if (progress) {
-        throttledPersistProgress(payload, progress);
-      }
+  if (obj.type === "prefetch_progress_line") {
+    const progress = parsePrefetchProgressLine(obj);
 
-      return null;
+    if (progress) {
+      throttledPersistProgress(payload, progress);
     }
 
-    if (obj.type === "prefetch_log_line" && typeof obj.line === "string") {
-      const logPayload = parsePrefetchLogLinePayload(obj);
-      void persistAndBroadcastPrefetchLogLine(payload, logPayload).catch((err: unknown) => {
-        logError("prefetch", "persist log line failed", payload.hash, err);
-      });
+    return null;
+  }
 
-      return null;
-    }
+  if (obj.type === "prefetch_log_line" && typeof obj.line === "string") {
+    const logPayload = parsePrefetchLogLinePayload(obj);
+    enqueuePersistAndBroadcastPrefetchLogLine(payload, logPayload);
 
-    if (obj.type === "prefetch_sync_result" && obj && typeof obj === "object" && "ok" in obj) {
-      return obj as PrefetchSyncWorkerResultMessage;
-    }
-  } catch {
-    // ignore
+    return null;
+  }
+
+  if (isPrefetchSyncWorkerResultMessage(obj)) {
+    return obj;
   }
 
   return null;

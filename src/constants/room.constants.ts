@@ -14,30 +14,11 @@ export const ROOM_LOG_TONES: readonly RoomLogTone[] = [
   "info",
 ] as const;
 
-export const ROOM_LOG_KINDS = ["text", "sector"] as const;
-
-export const ROOM_LOG_SECTOR_STATUSES = ["pending", "in_progress", "success", "error"] as const;
-
-/** Steady-state when no sync is active or in progress. Not active, not terminal. */
-export const IDLE_ROOM_STATUS = "idle" as const;
-
 /** Terminal room states during worker/queue close before reset to `idle`. */
 export const TERMINAL_ROOM_STATUSES = ["cancelled", "completed", "failed", "error"] as const;
 
 /** Persisted on `room.last_outcome` — result of the most recent finished sync run. */
 export const ROOM_LAST_OUTCOMES = ["cancelled", "completed", "failed", "error"] as const;
-
-export function isIdleRoomStatus(status: string | null): boolean {
-  return status === IDLE_ROOM_STATUS;
-}
-
-export function isTerminalRoomStatus(status: string | null): boolean {
-  if (status == null) {
-    return false;
-  }
-
-  return (TERMINAL_ROOM_STATUSES as readonly string[]).includes(status);
-}
 
 /** `room.closed_reason` when an active sync outlived the process (queue/worker map is empty on boot). */
 export const ROOM_CLOSED_REASON_PROCESS_RESTARTED = "process_restarted";

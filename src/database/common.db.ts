@@ -3,8 +3,7 @@ import { ContentType } from "stremio-addon-sdk";
 
 import { TABLE_NAMES } from "@/constants/dbBuild.constants";
 import { STREAM_TABLE_TYPE_MAP } from "@/constants/stream.constants";
-import { StreamWithConfig } from "@/types/stream.types";
-import { decryptPanelPasswordStored } from "@/utils/crypto.utils";
+import type { StreamWithConfigDbRow } from "@/types/stream.types";
 
 import { getPool } from "./pgPool.utils";
 
@@ -55,7 +54,7 @@ export async function getStreamAndConfigById(
   id: string,
   type: ContentType,
   userId: string,
-): Promise<StreamWithConfig[keyof StreamWithConfig]> {
+): Promise<StreamWithConfigDbRow | undefined> {
   if (!id) {
     throw new Error("[COMMON] [DB] id is required to get stream");
   }
@@ -64,10 +63,9 @@ export async function getStreamAndConfigById(
     throw new Error("[COMMON] [DB] userId is required to get stream");
   }
 
-  void userId;
   const streamtableName = STREAM_TABLE_TYPE_MAP[type];
 
-  const { rows } = await getPool().query(
+  const { rows } = await getPool().query<StreamWithConfigDbRow>(
     /* sql */ `
       SELECT
         s.*,
@@ -84,6 +82,9 @@ export async function getStreamAndConfigById(
       FROM
         ${streamtableName} s
         INNER JOIN ${TABLE_NAMES.HASH_CONFIG} hc ON s.hash = hc.hash
+        INNER JOIN ${TABLE_NAMES.USER_HASH_BRIDGE} uh ON uh.hash = s.hash
+        AND uh.user_id = $2
+        AND uh.is_active = TRUE
         LEFT JOIN ${TABLE_NAMES.XTREAM_CONFIGS} x ON hc.hash = x.hash_id
         LEFT JOIN ${TABLE_NAMES.DIRECT_CONFIGS} d ON hc.hash = d.hash_id
       WHERE
@@ -91,20 +92,8 @@ export async function getStreamAndConfigById(
       LIMIT
         1
     `,
-    [id],
+    [id, userId],
   );
 
-  const row = rows[0];
-
-  if (!row) {
-    return {} as StreamWithConfig[keyof StreamWithConfig];
-  }
-
-  const passwordStored = (row as StreamWithConfig["XtremeConfig"]).password;
-
-  if (typeof passwordStored === "string" && passwordStored.length > 0) {
-    (row as StreamWithConfig["XtremeConfig"]).password = decryptPanelPasswordStored(passwordStored);
-  }
-
-  return row as StreamWithConfig[keyof StreamWithConfig];
+  return rows[0];
 }

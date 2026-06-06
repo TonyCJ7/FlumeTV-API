@@ -1,0 +1,34 @@
+---
+description: Gortex code intelligence — prefer graph tools over file reads
+alwaysApply: true
+---
+
+<!-- gortex:communities:start -->
+<!-- gortex:skills:start -->
+## Community Skills
+
+| Area | Description | Skill |
+|------|-------------|-------|
+| Services 2 Dirs | 89 symbols | `/gortex-services-2-dirs` |
+| Factories 1 Dirs Directformattedcatalogfactory | 75 symbols | `/gortex-factories-1-dirs-directformattedcatalogfactory` |
+| Handlers 1 Dirs Handleputconfig | 69 symbols | `/gortex-handlers-1-dirs-handleputconfig` |
+| 4 Dirs | 61 symbols | `/gortex-4-dirs` |
+| Database 1 Dirs Withpgtransaction | 52 symbols | `/gortex-database-1-dirs-withpgtransaction` |
+| Handlers 1 Dirs Handlextremestream | 50 symbols | `/gortex-handlers-1-dirs-handlextremestream` |
+| Utils 2 Dirs | 50 symbols | `/gortex-utils-2-dirs` |
+| Factories Getmoviemetadetail | 46 symbols | `/gortex-factories-getmoviemetadetail` |
+| Core 2 Dirs Broadcastroomsse | 43 symbols | `/gortex-core-2-dirs-broadcastroomsse` |
+| Handlers 2 Dirs Handlegetstremiomanifesturl | 41 symbols | `/gortex-handlers-2-dirs-handlegetstremiomanifesturl` |
+| Utils Writelog | 38 symbols | `/gortex-utils-writelog` |
+| Factories 2 Dirs | 38 symbols | `/gortex-factories-2-dirs` |
+| Core 3 Dirs | 38 symbols | `/gortex-core-3-dirs` |
+| Core 2 Dirs Enqueuesyncjob | 37 symbols | `/gortex-core-2-dirs-enqueuesyncjob` |
+| Core 4 Dirs | 37 symbols | `/gortex-core-4-dirs` |
+| Handlers 2 Dirs Indexuserhashesforsubscribe | 32 symbols | `/gortex-handlers-2-dirs-indexuserhashesforsubscribe` |
+| Database 1 Dirs Addonstreamhandler | 31 symbols | `/gortex-database-1-dirs-addonstreamhandler` |
+| 2 Dirs Runprefetchsyncworkerprocess | 30 symbols | `/gortex-2-dirs-runprefetchsyncworkerprocess` |
+| Database 1 Dirs Addonmetahandler | 30 symbols | `/gortex-database-1-dirs-addonmetahandler` |
+| Factories 1 Dirs Getcommonmetadetail | 29 symbols | `/gortex-factories-1-dirs-getcommonmetadetail` |
+<!-- gortex:skills:end -->
+
+<!-- gortex:communities:end -->

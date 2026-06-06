@@ -3,6 +3,7 @@ import type { PoolClient } from "pg";
 import { TABLE_NAMES } from "@/constants/dbBuild.constants";
 import type { DirectSyncContextRow, FormattedDirectCatalog } from "@/types/directSync.types";
 
+import { deleteCatalogRowsByHash } from "./catalogSyncDelete.db";
 import { getPool } from "./pgPool.utils";
 import { withPgTransaction } from "./pgTransaction.utils";
 
@@ -15,21 +16,6 @@ const DIRECT_CATALOG_TABLES_DELETE_BY_HASH_ORDER = [
   TABLE_NAMES.MOVIE_CATEGORY,
   TABLE_NAMES.SERIES_CATEGORY,
 ] as const;
-
-async function deleteCatalogRows(
-  client: PoolClient,
-  tableName: (typeof DIRECT_CATALOG_TABLES_DELETE_BY_HASH_ORDER)[number],
-  hash: string,
-): Promise<void> {
-  await client.query(
-    /* sql */ `
-    DELETE FROM ${tableName}
-    WHERE
-      hash = $1
-  `,
-    [hash],
-  );
-}
 
 export async function getDirectSyncContext(
   hash: string,
@@ -289,7 +275,7 @@ async function insertSeriesEpisodeRow(
 
 async function purgeDirectCatalog(client: PoolClient, hash: string): Promise<void> {
   for (const tableName of DIRECT_CATALOG_TABLES_DELETE_BY_HASH_ORDER) {
-    await deleteCatalogRows(client, tableName, hash);
+    await deleteCatalogRowsByHash(client, tableName, hash);
   }
 }
 

@@ -12,19 +12,14 @@ import {
   logWarn,
 } from "@/utils/debug.utils";
 
-type RestErrorBody = {
-  code?: unknown;
-  message?: unknown;
-};
-
 function restErrorHintFromBody(body: unknown): string | undefined {
   if (!_isPlainObject(body)) {
     return undefined;
   }
 
-  const record = body as RestErrorBody;
-  const code = _trim(_toString(record.code));
-  const message = _trim(_toString(record.message));
+  const record = body as Record<string, string | number | boolean | null | undefined>;
+  const code = record.code != null ? _trim(_toString(record.code)) : "";
+  const message = record.message != null ? _trim(_toString(record.message)) : "";
 
   if (code && message) {
     return `${code}: ${message}`;

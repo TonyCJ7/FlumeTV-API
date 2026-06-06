@@ -15,6 +15,18 @@ import { getSyncProgressMinIntervalMs } from "@/utils/syncProgress.utils";
 
 type PrefetchStatusSseEventName = "snapshot" | "hash" | "global_queue";
 
+type PrefetchStatusHashSseData = {
+  entry: ConfigPrefetchStatusEntry | null;
+  hash: string;
+};
+
+type PrefetchStatusGlobalQueueSseData = Pick<GetConfigsPrefetchStatusResponseBody, "globalQueue">;
+
+type PrefetchStatusSsePayload =
+  | GetConfigsPrefetchStatusResponseBody
+  | PrefetchStatusHashSseData
+  | PrefetchStatusGlobalQueueSseData;
+
 const userIdToClients = new Map<string, Set<Response>>();
 const hashToSubscribedUserIds = new Map<string, Set<string>>();
 const sequenceByUserId = new Map<string, number>();
@@ -31,7 +43,7 @@ function writePrefetchStatusSseEvent(
   res: Response,
   sequence: number,
   event: PrefetchStatusSseEventName,
-  data: unknown,
+  data: PrefetchStatusSsePayload,
 ): boolean {
   try {
     if (res.writableEnded) {
@@ -50,7 +62,7 @@ function writePrefetchStatusSseEvent(
 async function writeEventToUserClients(
   userId: string,
   event: PrefetchStatusSseEventName,
-  data: unknown,
+  data: PrefetchStatusSsePayload,
 ): Promise<void> {
   const clients = userIdToClients.get(userId);
 

@@ -1,9 +1,4 @@
-import type { QueueJob } from "@/types/queue.types";
-
-export type PrefetchSyncQueueDepth = {
-  runningJobCount: number;
-  waitingJobCount: number;
-};
+import type { PrefetchSyncQueueDepth, QueueJob } from "@/types/queue.types";
 
 export const prefetchSyncQueueState = {
   fifoQueue: [] as QueueJob[],

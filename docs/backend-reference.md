@@ -6,15 +6,15 @@
 
 ### Documentation map
 
-| Document | Role |
-| --- | --- |
-| **`backend-reference.md` (this file)** | Implementation context — layers, flows, domain rules, file pointers |
-| [`api-documentation.md`](api-documentation.md) | **External contracts** — REST/SSE request/response shapes, Stremio addon URLs, PostgreSQL table reference |
-| [`api-error-codes.md`](api-error-codes.md) | REST `code` → HTTP status → remediation |
-| [`README.md`](../README.md) | Self-hosting — Docker, environment variables |
-| [`AGENTS.md`](../AGENTS.md) | Agent onboarding — docs map, layering, conventions |
-| [`.cursor/rules/`](../.cursor/rules/) | Layering, naming, code style |
-| [FlumeTV-UI frontend-reference](https://github.com/TonyCJ7/FlumeTV-UI/blob/main/docs/frontend-reference.md) | Official UI integration (cross-repo) |
+| Document                                                                                                    | Role                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **`backend-reference.md` (this file)**                                                                      | Implementation context — layers, flows, domain rules, file pointers                                       |
+| [`api-documentation.md`](api-documentation.md)                                                              | **External contracts** — REST/SSE request/response shapes, Stremio addon URLs, PostgreSQL table reference |
+| [`api-error-codes.md`](api-error-codes.md)                                                                  | REST `code` → HTTP status → remediation                                                                   |
+| [`README.md`](../README.md)                                                                                 | Self-hosting — Docker, environment variables                                                              |
+| [`AGENTS.md`](../AGENTS.md)                                                                                 | Agent onboarding — docs map, layering, conventions                                                        |
+| [`.cursor/rules/`](../.cursor/rules/)                                                                       | Layering, naming, code style                                                                              |
+| [FlumeTV-UI frontend-reference](https://github.com/TonyCJ7/FlumeTV-UI/blob/main/docs/frontend-reference.md) | Official UI integration (cross-repo)                                                                      |
 
 ---
 
@@ -22,9 +22,9 @@
 
 FlumeTV-API is a Node.js **Express** service that powers a self-hostable **Stremio IPTV addon** and a **REST API** for the FlumeTV config UI.
 
-| Surface           | Base path     | Auth                                                                        |
-| ----------------- | ------------- | --------------------------------------------------------------------------- |
-| **REST panel**    | `/api/...`    | httpOnly session cookie (JWT signed with `SESSION_JWT_SECRET`)              |
+| Surface           | Base path           | Auth                                                                        |
+| ----------------- | ------------------- | --------------------------------------------------------------------------- |
+| **REST panel**    | `/api/...`          | httpOnly session cookie (JWT signed with `SESSION_JWT_SECRET`)              |
 | **Stremio addon** | `/addon/:token/...` | Encrypted URL token (`encodeToken` / `decodeToken` with `ADDON_SECRET_KEY`) |
 
 **Persistence:** **PostgreSQL** via `pg` connection pool; `DATABASE_URL` is required. SQL schema lives in [`db/migrations/`](../db/migrations/); apply updates with **`npm run db:migrate`** (or on HTTP startup). Table name constants: [`src/constants/dbBuild.constants.ts`](../src/constants/dbBuild.constants.ts).
@@ -337,14 +337,14 @@ Main catalog tables per hash: `live_*`, `movie_*`, `series_*` categories and str
 
 ## Production and workers
 
-| Command              | Behavior                                                                                            |
-| -------------------- | --------------------------------------------------------------------------------------------------- |
-| `npm run dev`        | Docker dev stack — Postgres + API with `tsx watch`                                                  |
-| `npm run start`      | Docker production stack — pulls **`tonycj7/flumetv-api:latest`**                                    |
-| `npm run build`      | `tsc` + `tsc-alias` → `dist/`                                                                       |
-| `npm run dev:local`  | Host `tsx watch`; set `DATABASE_URL`                                                                |
-| `npm run start:local`| Host `node dist/index.js` after build                                                               |
-| `npm run db:migrate` | `tsx src/scripts/runMigrations.ts` — pending SQL in `db/migrations/`                                |
+| Command               | Behavior                                                             |
+| --------------------- | -------------------------------------------------------------------- |
+| `npm run dev`         | Docker dev stack — Postgres + API with `tsx watch`                   |
+| `npm run start`       | Docker production stack — pulls **`tonycj7/flumetv-api:latest`**     |
+| `npm run build`       | `tsc` + `tsc-alias` → `dist/`                                        |
+| `npm run dev:local`   | Host `tsx watch`; set `DATABASE_URL`                                 |
+| `npm run start:local` | Host `node dist/index.js` after build                                |
+| `npm run db:migrate`  | `tsx src/scripts/runMigrations.ts` — pending SQL in `db/migrations/` |
 
 **Worker env (internal):**
 
@@ -372,12 +372,12 @@ Cross-stack touchpoints: session cookie auth, config list + prefetch-status SSE,
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [api-documentation.md](api-documentation.md) | REST/SSE/Stremio contracts and PostgreSQL schema |
-| [api-error-codes.md](api-error-codes.md) | REST `code` → HTTP status → remediation |
-| [README.md](../README.md) | Quick start, Docker, environment variables |
-| `.cursor/rules/*.mdc` | Layering, naming, code style |
-| [`.cursor/rules/backend-reference-maintenance.mdc`](../.cursor/rules/backend-reference-maintenance.mdc) | When and how agents update these docs |
+| Document                                                                                                | Purpose                                          |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| [api-documentation.md](api-documentation.md)                                                            | REST/SSE/Stremio contracts and PostgreSQL schema |
+| [api-error-codes.md](api-error-codes.md)                                                                | REST `code` → HTTP status → remediation          |
+| [README.md](../README.md)                                                                               | Quick start, Docker, environment variables       |
+| `.cursor/rules/*.mdc`                                                                                   | Layering, naming, code style                     |
+| [`.cursor/rules/backend-reference-maintenance.mdc`](../.cursor/rules/backend-reference-maintenance.mdc) | When and how agents update these docs            |
 
 When extending the API, add error codes to [`errorCodes.constants.ts`](../src/constants/errorCodes.constants.ts) and [`api-error-codes.md`](api-error-codes.md) in the same change. Update [`api-documentation.md`](api-documentation.md) when contracts or schema change; update **this file** when implementation architecture or runtime behavior changes.

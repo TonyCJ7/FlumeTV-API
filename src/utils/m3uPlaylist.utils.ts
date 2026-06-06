@@ -1,10 +1,6 @@
 import _trim from "lodash/trim";
 
-export type M3uExtinfLineParts = {
-  displayTitle: string;
-  groupTitle: string | null;
-  logo: string | null;
-};
+import type { M3uExtinfLineParts } from "@/types/directSync.types";
 
 /** IPTV `#EXTINF`: attributes use double quotes; display name follows the last top-level comma. */
 export function parseM3uExtinfLine(line: string): M3uExtinfLineParts {

@@ -2,6 +2,12 @@
  * Fetch queue + scheduler tick tuning. Read at process startup; restart the server after changing env.
  */
 
+export const QUEUE_JOB_SOURCE = {
+  MANUAL_REFETCH: "manual-refetch",
+  NEW_CONFIG: "new-config",
+  SCHEDULER_DUE: "scheduler-due",
+} as const;
+
 export const FETCH_PARALLELISM = parseInt(process.env.FETCH_PARALLELISM || "4", 10);
 
 export const FETCH_MAX_BACKLOG_MS =

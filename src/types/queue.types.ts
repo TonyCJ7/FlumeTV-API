@@ -1,5 +1,5 @@
 import { REST_ERROR_CODES } from "@/constants/errorCodes.constants";
-import { QUEUE_JOB_SOURCE } from "@/constants/queue.constants";
+import { QUEUE_JOB_SOURCE } from "@/constants/scheduler.constants";
 import { MapToUnion } from "./common.types";
 
 export type SyncEnqueueSource = MapToUnion<typeof QUEUE_JOB_SOURCE>;
@@ -24,6 +24,11 @@ export type EnqueueSyncJobResult =
         | typeof REST_ERROR_CODES.HASH_SYNC_ALREADY_ACTIVE
         | typeof REST_ERROR_CODES.HASH_CONFIG_NOT_FOUND;
     };
+
+export type PrefetchSyncQueueDepth = {
+  runningJobCount: number;
+  waitingJobCount: number;
+};
 
 export type QueueJob = {
   estimatedWaitMs: number | null;

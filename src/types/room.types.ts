@@ -32,6 +32,21 @@ export type RoomLogSsePayload = {
   sectorPercent?: number | null;
 };
 
+export type AppendRoomLogStreamLineParams = {
+  bytesRead?: number | null;
+  bytesTotal?: number | null;
+  hash: string;
+  kind?: RoomLogKind;
+  level?: string;
+  line: string;
+  logKey?: string | null;
+  roomId: number;
+  sector?: string | null;
+  sectorPercent?: number | null;
+  status?: RoomLogSectorStatus | null;
+  tone?: RoomLogTone;
+};
+
 /** Raw SQL row for `room_log_line` replay queries. */
 export type RoomLogStreamSqlRow = {
   bytes_read: number | null;

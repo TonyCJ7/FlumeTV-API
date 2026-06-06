@@ -37,7 +37,7 @@ export function assertAddonSecretConfigured(): void {
  * @param data - The object to be stored in the Stremio URL.
  * @returns A Base64URL encoded encrypted string.
  */
-export function encodeToken(data: Record<string, any>): string {
+export function encodeToken(data: Record<string, unknown>): string {
   const key = getSecretKey();
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
@@ -47,6 +47,19 @@ export function encodeToken(data: Record<string, any>): string {
   const authTag = cipher.getAuthTag();
 
   return Buffer.concat([iv, authTag, encrypted]).toString("base64url");
+}
+
+function parseDecryptedJsonObject(raw: string): Record<string, unknown> | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return null;
+  }
+  return parsed as Record<string, unknown>;
 }
 
 /**
@@ -68,7 +81,8 @@ export function decodeToken<T = Record<string, unknown>>(token: string): T | nul
 
     const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
 
-    return JSON.parse(decrypted.toString("utf8"));
+    const parsed = parseDecryptedJsonObject(decrypted.toString("utf8"));
+    return parsed as T | null;
   } catch {
     return null;
   }

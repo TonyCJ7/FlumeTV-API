@@ -1,3 +1,44 @@
+/** Scalar field shape from Xtream panel JSON (string ids, numeric ids, or absent). */
+export type XtreamPanelField = string | number | null | undefined;
+
+/** Raw row from Xtream `get_*_categories` player_api response (ingress until factory coercion). */
+export type XtreamPanelCategoryRow = Readonly<{
+  category_id?: XtreamPanelField;
+  id?: XtreamPanelField;
+  category_name?: XtreamPanelField;
+  name?: XtreamPanelField;
+}>;
+
+/** Raw row from Xtream `get_live_streams` / `get_vod_streams` / `get_series` player_api response. */
+export type XtreamPanelStreamRow = Readonly<{
+  stream_id?: XtreamPanelField;
+  series_id?: XtreamPanelField;
+  num?: XtreamPanelField;
+  category_id?: XtreamPanelField;
+  name?: XtreamPanelField;
+  title?: XtreamPanelField;
+  full_name?: XtreamPanelField;
+  tv_archive_name?: XtreamPanelField;
+  stream_icon?: XtreamPanelField;
+  cover?: XtreamPanelField;
+  cover_big?: XtreamPanelField;
+  movie_image?: XtreamPanelField;
+  rating?: XtreamPanelField;
+  rating_5based?: XtreamPanelField;
+  plot?: XtreamPanelField;
+  description?: XtreamPanelField;
+  container_extension?: XtreamPanelField;
+  epg_channel_id?: XtreamPanelField;
+  epg_channel?: XtreamPanelField;
+}>;
+
+/** Ingress object from Xtream `get_user_info` player_api response. */
+export type XtreamUserInfoIngress = Readonly<{
+  user_info?: Readonly<{
+    auth?: XtreamPanelField;
+  }> | null;
+}>;
+
 export type XtreamFormattedCategory = {
   providerCategoryId: number | null;
   name: string;

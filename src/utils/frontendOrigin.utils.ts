@@ -2,7 +2,7 @@ import _compact from "lodash/compact";
 import _map from "lodash/map";
 import _trim from "lodash/trim";
 
-export const DEFAULT_FRONTEND_ORIGIN = "http://localhost:7000";
+const DEFAULT_FRONTEND_ORIGIN = "http://localhost:7000";
 
 function frontendOriginsListFromEnv(): string[] {
   const raw = process.env.FRONTEND_ORIGIN;

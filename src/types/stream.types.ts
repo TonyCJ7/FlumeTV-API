@@ -26,6 +26,32 @@ export type Category = {
   category_name: string;
 };
 
+/** Joined SQL row from `getStreamAndConfigById` (`stream` + `hash_config` + provider tables). */
+export type StreamWithConfigDbRow = {
+  id: string | number;
+  stream_id: number;
+  hash: string;
+  name: string;
+  full_name: string | null;
+  stream_icon: string | null;
+  rating: string;
+  category_id: number | null;
+  category_internal_id: number | null;
+  description: string | null;
+  container_extension: string | null;
+  data: string | null;
+  epg_channel_id: string | null;
+  config_type: string;
+  xtreme_url: string | null;
+  username: string | null;
+  password: string | null;
+  has_custom_epg: boolean | null;
+  custom_epg: string | null;
+  epg_url: string | null;
+  epg_offset: number | null;
+  m3u_url: string | null;
+};
+
 /**
  * Xtream branch row from `getStreamAndConfigById`: panel URL, EPG fields, and credentials from `xtream_configs`;
  * `password` is decrypted from `password_enc` when sealed with `encryptSecretForStorage`.
