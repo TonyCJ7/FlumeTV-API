@@ -1,0 +1,28 @@
+# Dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+credentials.json
+.secrets/
+
+# Local data and logs
+postgres-data/
+*.log
+npm-debug.log*
+coverage/
+*.db
+*.db-*
+
+# Large or low-signal generated files
+package-lock.json
+
+# OS junk
+.DS_Store

@@ -1,0 +1,27 @@
+---
+description: Name functions by primary operation — not vague ensure/check when they persist or call I/O
+alwaysApply: true
+---
+
+# Function operation naming
+
+Suffixes and folder verbs: [`general-naming-conventions.mdc`](general-naming-conventions.mdc).
+
+## Prefix by intent
+
+| Intent | Examples |
+| --- | --- |
+| HTTP entry | `handle*` |
+| Read | `get*`, `fetch*`, `list*`, `find*` |
+| Write | `insert*`, `upsert*`, `update*`, `delete*` |
+| Shape | `validate*`, `parse*` |
+
+## Do not
+
+- Use **`ensure*`** / **`check*`** when the function **writes** or **calls the network** — use **`upsert*`**, **`update*`**, **`fetch*`**
+- Use **`handle*`** / **`process*`** for non-entrypoint logic — name the operation
+- Repeat parameter scope in the name (`purgeQueueJob(hash)`, not `purgeQueueJobForHash`)
+
+## Quick test
+
+If a reader would be surprised the function touches the DB, sends HTTP, or mutates shared state, rename or split it.

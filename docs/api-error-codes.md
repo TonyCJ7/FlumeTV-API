@@ -1,0 +1,46 @@
+# FlumeTV — REST API error codes
+
+JSON error responses use this shape:
+
+```json
+{ "code": "SOME_CODE", "message": "Human-readable detail for the UI" }
+```
+
+- **`code`** — Stable machine string; map it in the UI to copy, tooltips, or i18n keys.
+- **`message`** — English string for display or logging; may vary slightly by release. Prefer **`code`** for branching.
+
+New `/api/...` endpoints should use **`code`** values defined in [`src/constants/errorCodes.constants.ts`](../src/constants/errorCodes.constants.ts) (`REST_ERROR_DEFINITIONS`). Add new entries there and extend this document in the same change. Implementation context: [backend-reference.md](backend-reference.md). Request/response shapes: [api-documentation.md](api-documentation.md).
+
+## Auth and session
+
+| Code                              | HTTP | Meaning                                                                                                     | Typical remediation                                                                 |
+| --------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `REGISTER_PASSWORD_INVALID`       | 400  | Password missing, too short, or not acceptable.                                                             | Use at least 8 characters (see server validation rules).                            |
+| `AUTH_BODY_INVALID`               | 400  | Login body missing `userId` or `password`.                                                                  | Send both fields as non-empty strings.                                              |
+| `AUTH_INVALID_CREDENTIALS`        | 401  | Wrong password or unknown user id.                                                                          | Verify credentials or register.                                                     |
+| `AUTH_SESSION_MISSING`            | 401  | Protected route called without a session cookie.                                                            | Log in or register so the client stores the httpOnly cookie.                        |
+| `AUTH_SESSION_INVALID`            | 403  | Cookie present but JWT invalid or expired.                                                                  | Log in again.                                                                       |
+| `REGISTER_USER_ID_CONFLICT`       | 409  | Rare UUID collision on insert.                                                                              | Retry registration.                                                                 |
+| `REGISTER_FAILED`                 | 500  | Account could not be created (e.g. hashing or DB error).                                                    | Retry later; check server logs.                                                     |
+| `AUTH_SERVER_MISCONFIGURED`       | 503  | Session signing secret or config missing.                                                                   | Operator: set `SESSION_JWT_SECRET` and restart.                                     |
+| `CHANGE_PASSWORD_BODY_INVALID`    | 400  | `POST /api/auth/change-password` missing `currentPassword` or `newPassword`, or either is empty after trim. | Send both fields as non-empty strings.                                              |
+| `CHANGE_PASSWORD_CURRENT_INVALID` | 401  | `POST /api/auth/change-password` — current password does not match the stored hash.                         | Re-enter the current password; this is not `AUTH_INVALID_CREDENTIALS` (login only). |
+
+## Config
+
+| Code                              | HTTP | Meaning                                                                                                                                                                                                                 | Typical remediation                                                                                                                                                                                                |
+| --------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CONFIG_BODY_INVALID`             | 400  | POST/PUT `/api/configs` body is not valid JSON shape or missing required fields (including **`configName`**: trimmed, 1–200 chars); or `DELETE` / `PUT /api/configs/:hash` with a missing/invalid `:hash` path segment. | Send `type: "xtream"` or `"direct"` with provider fields plus **`configName`** (see [Config request body](api-documentation.md#config-request-body-post--put)); for DELETE/PUT, send a non-empty URL-encoded hash. |
+| `CONFIG_PROVIDER_URL_NOT_ALLOWED` | 400  | POST/PUT `/api/configs` — `panelUrl`, `m3uUrl`, or non-empty `epgUrl` points to a private, localhost, or otherwise blocked destination.                                                                                 | Use a public `http` or `https` URL for the panel, M3U, or EPG. Private IPs and localhost are blocked.                                                                                                              |
+| `CONFIG_ALREADY_EXISTS`           | 409  | POST `/api/configs` when the computed provider hash is already linked to the session user (same M3U/Xtream credentials). **`message`** includes the existing **`configName`**.                                          | Rename via PUT `/api/configs/:hash`, or link a different provider. If the hash exists globally but is not on your account, POST still succeeds with **`linkStatus: "linked-existing"`**.                           |
+
+## Config, queue, room
+
+| Code                            | HTTP | Meaning                                                                                                                                                                                           | Typical remediation                                                                                                                                  |
+| ------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `QUEUE_BACKLOG_EXCEEDED`        | 429  | Estimated prefetch wait exceeds the configured cap (~20h).                                                                                                                                        | Retry later; operator may raise `FETCH_MAX_BACKLOG_HOURS`.                                                                                           |
+| `HASH_SYNC_ALREADY_ACTIVE`      | 409  | That hash already has a sync queued or running; or **last user** `DELETE` / `PUT /api/configs/:hash` (replacing the hash) while the room is **`running`** or **`fetching`** (worker in progress). | Wait for completion/failure, or use `POST /api/hashes/:hash/cancel`. Queued-only jobs are cancelled/purged by DELETE instead of returning this code. |
+| `HASH_CONFIG_NOT_FOUND`         | 500  | Enqueue ran but `hash_config` row is missing (bug / race).                                                                                                                                        | Retry; report if it persists.                                                                                                                        |
+| `HASH_NOT_LINKED_TO_USER`       | 403  | Session user has no `user_hash` row for this hash (e.g. GET `/api/hashes/:hash/room/events`).                                                                                                     | Link the config with POST `/api/configs` or use the owning account.                                                                                  |
+| `HASH_CANCEL_NOT_AUTHORIZED`    | 403  | POST `/api/hashes/:hash/cancel` when `room.triggered_by` is not the session user (e.g. another user or scheduler started the job).                                                                | Only the user who started the sync may cancel it; others must wait.                                                                                  |
+| `HASH_NO_ACTIVE_SYNC_TO_CANCEL` | 409  | Cancel requested but there is no queued/running job, or a running worker could not be signalled (race).                                                                                           | Enqueue a refetch first, or retry if the job just finished.                                                                                          |

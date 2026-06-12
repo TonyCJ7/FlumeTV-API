@@ -1,0 +1,40 @@
+---
+description: YAGNI then DRY then SOLID — keep flows simple and readable
+alwaysApply: true
+---
+
+# Design principles (priority order)
+
+Apply in order when adding or refactoring **`src/`** flows (handlers → core → services → database). Layer rules: [`backend-architecture-flow.mdc`](backend-architecture-flow.mdc), [`addon-layering.mdc`](addon-layering.mdc).
+
+## 1. YAGNI — ship only what is needed now
+
+- Implement the **current** request or bug fix; no “future-proof” APIs, config flags, or plugin hooks without a caller today.
+- No speculative multi-format parsers, generic frameworks, or extra types “for later.”
+- One code path beats a strategy/factory until a **second real variant** exists.
+- Prefer extending an existing function over a new module when behavior stays in one domain.
+
+## 2. DRY — dedupe after repetition is real
+
+- Extract shared logic only when the **same rule** appears twice (or will on the next immediate change in the same PR).
+- Put shared code in the **lowest correct layer** (`utils` → `factories` → `core` → `services` → `database`) — not a grab-bag helper at the call site.
+- Do not DRY **incidental** similarity (same shape, different meaning) — duplicated lines are OK if concepts differ.
+- Avoid “DRY” that couples unrelated features (shared mega-util, god `core` module).
+
+## 3. SOLID — structure when complexity earns it
+
+- **S**ingle responsibility: one dominant effect per function/file (see [`function-operation-naming.mdc`](function-operation-naming.mdc)); handlers orchestrate, **`core`** owns jobs/queue/SSE, **`database`** owns SQL.
+- **O**pen/closed: extend via new functions or small modules, not boolean switches on `mode` / `type` unless the product already has those variants.
+- **L**iskov: substitutes must honor the same contract (e.g. empty Stremio shapes, stable factory outputs).
+- **I**nterface segregation: narrow types in **`*.types.ts`**; do not pass whole DB rows through layers when three fields suffice.
+- **D**ependency inversion: depend on layer boundaries and types, not concrete imports upward (acyclic DAG — no `services` → `core`).
+
+## Quick checks before finishing
+
+| Question | If “no” or “not yet” |
+| --- | --- |
+| Is there a caller or ticket for this abstraction? | Delete or inline (YAGNI). |
+| Is this the second copy of the same rule? | Extract once, one place (DRY). |
+| Does a new file/module have one clear reason to change? | Split or merge (SOLID-S). |
+
+When principles conflict: **YAGNI wins over DRY** (wait for the second use); **DRY wins over premature SOLID** (no interface per function).

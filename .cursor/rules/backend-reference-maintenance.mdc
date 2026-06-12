@@ -1,0 +1,43 @@
+---
+description: Keep docs/backend-reference.md and linked API docs aligned with backend behavior
+alwaysApply: true
+---
+
+# Backend reference maintenance
+
+[`docs/backend-reference.md`](../docs/backend-reference.md) is the **source of truth for backend implementation** — architecture, domain model, runtime behavior, and pointers into `src/`. It links to specialized docs; it is **not** a changelog.
+
+| Document | Update when |
+| --- | --- |
+| **`backend-reference.md`** | Layer layout, queue/scheduler/room/SSE/sync behavior, domain rules, file/module pointers, frontend integration notes |
+| [`api-documentation.md`](../docs/api-documentation.md) | REST/SSE/Stremio **contracts** — routes, JSON shapes, SSE payloads, PostgreSQL schema |
+| [`api-error-codes.md`](../docs/api-error-codes.md) | New/changed REST **`code`** values (with [`errorCodes.constants.ts`](../src/constants/errorCodes.constants.ts)) |
+| [`README.md`](../README.md) | Self-hosting, Docker, environment variables only |
+
+## Every chat: check before finishing
+
+Before ending a session that touched this repo, ask: **did backend behavior visible to the UI, addon, or agents change?**
+
+| Update docs | Skip docs |
+| --- | --- |
+| New/changed/removed REST or Stremio routes | Bug fixes with no API or behavior change |
+| Auth, session, or addon token semantics | Refactors, renames, or internal layering only |
+| Config hash rules, domain entities, or cascade behavior | Performance tuning, logging, or SQL internals |
+| Prefetch queue, scheduler, room lifecycle, or sync progress | Worker env tweaks unless UI-facing |
+| New/changed SSE events or poll response shapes | Minute error-message wording |
+| Request/response JSON or DB schema | Operator details already in README |
+
+If **yes** to any “update” row, edit the matching doc(s) in the **same session** — do not defer.
+
+## How to edit
+
+- **Start from `backend-reference.md`** for implementation context; link out instead of duplicating full contract tables.
+- Match existing section structure and tone; prefer updating a section over adding a duplicate.
+- Bump **`Last updated:`** on changed docs.
+- Do **not** document speculative or unimplemented behavior.
+
+## Scope reminder
+
+**`backend-reference.md`** — what the codebase does and where logic lives.
+
+**`api-documentation.md`** — what callers (UI, custom clients, Stremio) can rely on at the wire.

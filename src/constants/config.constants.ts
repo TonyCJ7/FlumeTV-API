@@ -1,0 +1,1 @@
+export const CONFIG_DISPLAY_NAME_MAX_LEN = 200;

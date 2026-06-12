@@ -1,0 +1,57 @@
+---
+description: TypeScript formatting, naming, and layout for this backend
+alwaysApply: true
+---
+
+# Backend code style
+
+**Context:** [`docs/backend-reference.md`](../docs/backend-reference.md) · **Design:** [`design-principles.mdc`](design-principles.mdc) · **Layers:** [`backend-architecture-flow.mdc`](backend-architecture-flow.mdc), [`addon-layering.mdc`](addon-layering.mdc)
+
+## Naming
+
+- File stems under **`src/`**: **camelCase** (`addonMeta.handler.ts`, `xtreamCatalogSync.factory.ts`)
+- Functions: verb + domain noun — see [`general-naming-conventions.mdc`](general-naming-conventions.mdc), [`function-operation-naming.mdc`](function-operation-naming.mdc)
+- Exported factory mappers: **`camelCase`** + **`Factory`** suffix (`directConfigItemFactory`)
+- **`services`** exports: **`fetch*`** / **`get*`** for outbound HTTP — not vague **`run*`** / **`do*`** / **`call*`**
+
+## Formatting
+
+- Braces on every `if` / `else` / `for` / `while` body
+- Space inside block braces: `{ like this }`
+- Do not nest calls several layers deep — use named locals
+- Blank line after imports; external packages, then **`@/`** aliases
+- Spaces inside object literals: `{ foo: bar }`
+
+## Module suffixes
+
+| Suffix | Contains |
+| --- | --- |
+| `*.types.ts` | Types only |
+| `*.constants.ts` | `export const` / env literals only — no functions |
+| `*.utils.ts` | Pure helpers — no `pool.query`, no axios |
+| `*.factory.ts` | Pure mappers — no I/O |
+| `*.services.ts` | Outbound HTTP; may use `database` / `factories` |
+| `*.db.ts` | SQL only — one **`pool.query`** (or **`client.query` in transaction**) per function; **`withPgTransaction`** for multi-step writes |
+
+## Pragmatism
+
+- Match **known** provider/API shapes — no speculative multi-format parsers
+- Normalize at the **service** boundary so callers get a stable shape
+
+## Arguments and state
+
+- Do not quietly mutate caller-owned arrays/maps unless the name says so
+- Prefer pure builders; accumulate in the orchestrating handler or job
+
+## Lodash
+
+- [`lodash-usage.mdc`](lodash-usage.mdc): per-function imports (`import _trim from "lodash/trim"`), prefer lodash on unknown-shaped values
+
+## Do not
+
+- Add ad-hoc **migration runners** outside `db/migrations/` unless the user explicitly asks
+- Put **`axios`** in **`core/`**, **`pool.query`** in **`factories/`**, or **`handlers`** in **`core/`**
+
+## Tooling
+
+- Run **`npm run format`** and **`npm run lint`** before commit

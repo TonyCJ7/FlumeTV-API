@@ -1,0 +1,28 @@
+---
+description: Folder, file, function, and constant naming for layered TypeScript apps
+alwaysApply: true
+---
+
+# Naming conventions
+
+Layout: [`addon-layering.mdc`](addon-layering.mdc) · Style: [`code-style.mdc`](code-style.mdc)
+
+## Files: stem + suffix
+
+| Suffix | Contains |
+| --- | --- |
+| `*.types.ts` | Types only |
+| `*.constants.ts` | Named constants and env-backed literals — no functions |
+| `*.utils.ts` | Pure helpers |
+| `*.factory.ts` | Pure mappers (no I/O) |
+| `*.handler.ts` | HTTP/SDK entry |
+| `*.services.ts` | Outbound network I/O |
+| `*.db.ts` | Persistence |
+
+**This repo:** camelCase stems under **`src/`**.
+
+## Functions and constants
+
+- Name for the **dominant effect** — see [`function-operation-naming.mdc`](function-operation-naming.mdc)
+- **`SCREAMING_SNAKE_CASE`** for shared semantic constants
+- Types only in **`*.types.ts`**

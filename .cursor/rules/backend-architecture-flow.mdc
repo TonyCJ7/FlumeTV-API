@@ -1,0 +1,44 @@
+---
+description: Backend layer dependency direction (acyclic DAG)
+globs: src/**/*.ts
+alwaysApply: false
+---
+
+# Import direction
+
+```
+routes → handlers → { core, services, database, factories, utils }
+core → { services, database, factories, utils }
+services → { database, factories, utils }
+workers → { core, services, database, factories, utils }
+addon → handlers
+middleware → { utils }   (and constants/types as needed)
+```
+
+**`utils`** and **`factories`** are leaf layers — no imports from handlers, core, services, or database upward.
+
+## Layer roles
+
+| Layer | Role |
+| --- | --- |
+| `routes/` | Thin Express routers — delegate to handlers |
+| `middleware/` | Cross-cutting HTTP (auth, rate limits, headers, logging) |
+| `handlers/` | REST and Stremio entry — orchestrate lower layers |
+| `core/` | Queue, scheduler, prefetch jobs, SSE broadcasters, room lifecycle |
+| `services/` | Outbound HTTP (`axios`); normalize at the API boundary |
+| `factories/` | Pure mappers — no I/O |
+| `database/` | PostgreSQL SQL only — one `pool.query` (or `client.query` in transaction) per function |
+| `utils/` | Small pure helpers |
+| `workers/` | Child-process entry for prefetch sync only |
+| `addon/` | Stremio `addonBuilder` handler registration |
+
+## Do not
+
+- **`services` → `core`** or **`core` → `handlers`**
+- **`database` → `services`** or **`database` → `core`**
+- **`factories` → `database`** or **`factories` → `services`**
+- **`axios`** outside **`services/`** (except rare one-off in a handler)
+- Add parallel top-level **`sdk/`** or **`scheduler/`** — use **`src/addon/`** and **`src/core/`**
+- Put **`pool.query`** in **`factories/`**, **`handlers`** in **`core/`**, or business orchestration that belongs in **`core/`** inside **`handlers/`**
+
+Details: [`addon-layering.mdc`](addon-layering.mdc)
