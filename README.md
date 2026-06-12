@@ -289,7 +289,8 @@ Copy [`.env.example`](.env.example) to `.env` before running or deploying. Value
 | `MEDIAFLOW_PROXY_URL` | — | Base URL of MediaFlow ([Python proxy](https://github.com/mhdzumair/mediaflow-proxy) or [Proxy Light](https://github.com/mhdzumair/MediaFlow-Proxy-Light)). With `MEDIAFLOW_PROXY_API_PASSWORD`, **http and https** addon playback URLs are rewritten to MediaFlow proxy links. |
 | `MEDIAFLOW_PROXY_API_PASSWORD` | — | MediaFlow API password (paired with `MEDIAFLOW_PROXY_URL`). |
 | `MEDIAFLOW_PROXY_PUBLIC_URL` | — | Optional public HTTPS origin for returned proxy links when MediaFlow is reached on an internal host (e.g. Docker `http://mediaflow:8888` internally, `https://mediaflow.example.com` externally). |
-| `MEDIAFLOW_PROXY_TRANSCODE` | — | Set to `1`, `true`, or `yes` to send `transcode=true` on MediaFlow `generate_urls` (default off — pass-through). Adds CPU/GPU load on the proxy host. |
+| `MEDIAFLOW_PROXY_TRANSCODE` | — | Set to `1`, `true`, or `yes` to send `transcode=true` on MediaFlow `generate_urls` (default off — pass-through). Adds CPU/GPU load on the proxy host. Also enables redirect resolution before MediaFlow (see below). |
+| `MEDIAFLOW_PROXY_RESOLVE_REDIRECTS` | — | Set to `1`, `true`, or `yes` to resolve panel HTTP redirects to public CDN URLs before MediaFlow `generate_urls`. **Auto-enabled when transcode is on.** Helps panels that return `302` on Range probes (e.g. Xtream → CDN token URLs). |
 | `PG_POOL_MAX` | `10` | Max connections in the HTTP process pool. |
 | `PG_POOL_MAX_WORKER` | `2` | Max connections in prefetch worker pools. |
 | `SYNC_PROGRESS_MIN_INTERVAL_MS` | `500` | Min ms between sync progress broadcasts. |
@@ -331,7 +332,7 @@ Copy [`.env.example`](.env.example) to `.env` before running or deploying. Value
 - **Stremio addon** — Manifest, catalog, meta, stream, and configure routes via **stremio-addon-sdk** wiring.
 - **Encrypted addon tokens** — Public URLs use UUID-only tokens (no raw user ids in paths).
 - **Stream resolution** — Playback URLs from synced M3U rows or Xtream panel URLs.
-- **MediaFlow stream proxy** (optional) — Proxies **http + https** playback URLs when `MEDIAFLOW_PROXY_URL` and `MEDIAFLOW_PROXY_API_PASSWORD` are set and the user is proxied. Pass-through by default; set `MEDIAFLOW_PROXY_TRANSCODE=true` for transcoded output. When MediaFlow is unset or the user is not proxied, streams include **`notWebReady: true`** (use an external player such as MPV). Xtream live extension follows panel `allowed_output_formats` at sync (prefers **ts**). Supports [mediaflow-proxy](https://github.com/mhdzumair/mediaflow-proxy) or [MediaFlow Proxy Light](https://github.com/mhdzumair/MediaFlow-Proxy-Light) with the same env vars.
+- **MediaFlow stream proxy** (optional) — Proxies **http + https** playback URLs when `MEDIAFLOW_PROXY_URL` and `MEDIAFLOW_PROXY_API_PASSWORD` are set and the user is proxied. Pass-through by default; set `MEDIAFLOW_PROXY_TRANSCODE=true` for transcoded output (also resolves panel redirects to CDN URLs before MediaFlow). Optional `MEDIAFLOW_PROXY_RESOLVE_REDIRECTS=true` enables redirect resolution without transcode. When MediaFlow is unset or the user is not proxied, streams include **`notWebReady: true`** (use an external player such as MPV). Xtream live extension follows panel `allowed_output_formats` at sync (prefers **ts**). Supports [mediaflow-proxy](https://github.com/mhdzumair/mediaflow-proxy) or [MediaFlow Proxy Light](https://github.com/mhdzumair/MediaFlow-Proxy-Light) with the same env vars.
 
 ### ⚙️ Sync engine
 

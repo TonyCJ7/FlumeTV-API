@@ -7,9 +7,11 @@ import {
   MEDIAFLOW_BATCH_CHUNK_SIZE,
   MEDIAFLOW_GENERATE_URLS_TIMEOUT_MS,
   MEDIAFLOW_PROXY_API_PASSWORD,
+  MEDIAFLOW_PROXY_RESOLVE_REDIRECTS_ENABLED,
   MEDIAFLOW_PROXY_TRANSCODE_ENABLED,
   MEDIAFLOW_PROXY_URL,
 } from "@/constants/streamProxy.constants";
+import { fetchPublicPlaybackUrls } from "@/services/playbackRedirect.services";
 import type {
   MediaflowGenerateUrlsRequest,
   MediaflowGenerateUrlsResponse,
@@ -120,6 +122,27 @@ async function fetchMediaflowProxiedUrlChunk(
   return rewrittenUrls;
 }
 
+async function resolveSourcesForMediaflow(
+  sources: Array<{ destinationUrl: string; filename?: string }>,
+): Promise<Array<{ destinationUrl: string; filename?: string }>> {
+  if (!MEDIAFLOW_PROXY_RESOLVE_REDIRECTS_ENABLED) {
+    return sources;
+  }
+
+  const resolvedUrls = await fetchPublicPlaybackUrls(
+    _map(sources, (source) => {
+      return source.destinationUrl;
+    }),
+  );
+
+  return _map(sources, (source, index) => {
+    return {
+      destinationUrl: resolvedUrls[index],
+      filename: source.filename,
+    };
+  });
+}
+
 export async function fetchMediaflowProxiedUrls(
   sources: Array<{ destinationUrl: string; filename?: string }>,
 ): Promise<string[]> {
@@ -135,11 +158,13 @@ export async function fetchMediaflowProxiedUrls(
   }
 
   try {
-    const chunks = _chunk(sources, MEDIAFLOW_BATCH_CHUNK_SIZE);
+    const resolvedSources = await resolveSourcesForMediaflow(sources);
+    const chunks = _chunk(resolvedSources, MEDIAFLOW_BATCH_CHUNK_SIZE);
 
     logInfo("stream proxy", "fetchMediaflowProxiedUrls start", {
       sourceCount: sources.length,
       chunkCount: chunks.length,
+      resolveRedirects: MEDIAFLOW_PROXY_RESOLVE_REDIRECTS_ENABLED,
     });
 
     const proxiedChunks = await Promise.all(
